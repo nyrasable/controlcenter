@@ -21,13 +21,24 @@ function verifyState(state) {
   }
 
   const [nonce, signature] = parts;
+  const secretFingerprint = crypto
+  .createHash("sha256")
+  .update(process.env.SESSION_SECRET)
+  .digest("hex")
+  .slice(0, 12);
+
+console.log("CALLBACK_SECRET_FP", secretFingerprint);
+console.log("STATE_NONCE", nonce);
+console.log("STATE_SIGNATURE_RECEIVED", signature);
 
   const expected = crypto
     .createHmac("sha256", process.env.SESSION_SECRET)
     .update(nonce)
     .digest("hex")
     .slice(0, 24);
-
+  
+console.log("STATE_SIGNATURE_EXPECTED", expected);
+  
   if (signature.length !== expected.length) {
     return false;
   }
