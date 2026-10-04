@@ -98,6 +98,36 @@ h2{margin-top:0}
 .note{font-size:.8rem;color:#888;margin-top:12px}
 footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 
+
+.radar-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.radar-actions{display:flex;gap:8px;flex-wrap:wrap}
+.radar-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:14px}
+.trend-list{display:grid;gap:9px}
+.trend-row{
+  display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center;
+  padding:12px;background:#0b0b12;border:1px solid var(--border);border-radius:14px
+}
+.trend-rank{
+  width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-weight:900;
+  background:#151521;color:#cfc5ff
+}
+.trend-name{font-weight:800;font-size:1rem}
+.trend-meta{font-size:.77rem;color:var(--muted);margin-top:3px}
+.opportunity{
+  min-width:82px;text-align:center;padding:8px;border-radius:12px;
+  background:#14141f;border:1px solid var(--border)
+}
+.opportunity b{display:block;font-size:1.05rem}
+.opportunity span{font-size:.68rem;color:var(--muted)}
+.op-high b{color:var(--good)}.op-mid b{color:var(--warn)}
+.radar-summary{display:grid;gap:9px}
+.radar-box{padding:14px;background:#0b0b12;border:1px solid var(--border);border-radius:14px}
+.radar-box b{display:block;margin-bottom:6px}
+.radar-status{display:inline-flex;gap:7px;align-items:center;font-size:.82rem;color:var(--muted)}
+.radar-status .pulse{width:8px;height:8px;border-radius:50%;background:var(--good)}
+.source-link{color:#bda9ff;text-decoration:none}
+@media(max-width:880px){.radar-grid{grid-template-columns:1fr}}
+
 @media(max-width:980px){.theme-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:880px){
   .grid{grid-template-columns:1fr}
@@ -117,7 +147,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div class="logo">N</div>
     <div>
       <h1>Nyra Control Center</h1>
-      <div class="sub">TikTok creator cockpit · Analytics V2.1</div>
+      <div class="sub">TikTok creator cockpit · Analytics V3 · Radar TikTok</div>
     </div>
   </div>
   <div class="actions">
@@ -210,6 +240,60 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     </div>
     <div class="note">
       TikTok ne fournit pas ici les abonnements gagnés vidéo par vidéo : l’affinité reste un indicateur indirect.
+    </div>
+  </article>
+
+  <article id="radarCard" class="card full hidden">
+    <div class="radar-head">
+      <div>
+        <h2>📡 Radar TikTok France</h2>
+        <div class="radar-status">
+          <span class="pulse"></span>
+          <span id="radarStatus">Chargement des tendances publiques…</span>
+        </div>
+        <p class="muted">
+          Croisement entre les tendances publiques TikTok Creative Center et les univers qui performent chez Nyra.
+        </p>
+      </div>
+      <div class="radar-actions">
+        <button id="refreshRadar">Actualiser le radar</button>
+        <a id="creativeCenterLink" class="btn" target="_blank" rel="noopener">Ouvrir Creative Center</a>
+      </div>
+    </div>
+
+    <div class="radar-grid">
+      <div class="panel">
+        <h3>Opportunités compatibles avec Nyra</h3>
+        <div id="trendMatches" class="trend-list"></div>
+        <div id="noTrendMatches" class="muted hidden" style="padding:16px 0">
+          Aucune tendance du classement public n’est suffisamment proche de l’univers Nyra pour le moment.
+        </div>
+      </div>
+
+      <div class="radar-summary">
+        <div class="radar-box">
+          <b>🔥 Opportunité prioritaire</b>
+          <div id="radarBest">En attente…</div>
+        </div>
+        <div class="radar-box">
+          <b>🧠 Logique du score</b>
+          <div class="muted">
+            Tendance TikTok 40 % · historique Nyra 35 % · compatibilité créative 25 %.
+          </div>
+        </div>
+        <div class="radar-box">
+          <b>ℹ️ Source</b>
+          <div class="muted">
+            TikTok Creative Center public · France · 7 jours.
+            <br><span id="radarFetched"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      Le Radar n’utilise pas une API TikTok privée : il lit uniquement la surface publique du Creative Center.
+      Si TikTok modifie cette page, le radar peut temporairement afficher « source indisponible » sans affecter les statistiques du compte.
     </div>
   </article>
 
@@ -622,6 +706,134 @@ function generateRandomIdea(){
 
 $("random").onclick=generateRandomIdea;
 
+
+const trendThemeMap = [
+  {theme:"AI Girl / Digital", words:["ai","aigirl","artificialintelligence","digital","avatar","gemini","chatgpt","prompt","future","tech","cyber","virtual"]},
+  {theme:"Moon & Fantasy", words:["moon","luna","lunar","fantasy","witch","magic","mystic","celestial","gothic","dream","fairy"]},
+  {theme:"Fashion", words:["fashion","outfit","ootd","style","look","dress","fitcheck","beauty","makeup","glam","runway"]},
+  {theme:"Sport", words:["workout","fitness","run","running","gym","training","sport","pilates","yoga","challenge"]},
+  {theme:"Mini-drama / SF", words:["pov","story","drama","plot","cinematic","transition","transformation","edit","capcut","effect"]},
+  {theme:"Lifestyle", words:["morning","routine","coffee","dayinmylife","lifestyle","selfcare","grwm"]},
+  {theme:"Dark aesthetic", words:["dark","darkfeminine","goth","black","aesthetic","mysterious","night"]},
+];
+
+function normalizeTrendName(s){
+  return String(s||"").toLowerCase().replace(/^#/,"").replace(/[^a-z0-9à-ÿ_]/g,"");
+}
+
+function trendCompatibility(name){
+  const n=normalizeTrendName(name);
+  let best={theme:"Autres",score:0};
+  for(const row of trendThemeMap){
+    let score=0;
+    for(const w of row.words){
+      const ww=normalizeTrendName(w);
+      if(n.includes(ww) || ww.includes(n)) score+= n===ww ? 45 : 28;
+    }
+    if(score>best.score)best={theme:row.theme,score:Math.min(100,score)};
+  }
+  return best;
+}
+
+function nyraThemeScore(theme){
+  if(!analyticsState)return 35;
+  const rows=analyticsState.themes||[];
+  const exact=rows.find(t=>t.name===theme);
+  if(exact)return Math.round(exact.avgC);
+  if(theme==="Mini-drama / SF"){
+    const ai=rows.find(t=>t.name==="AI Girl / Digital");
+    const dark=rows.find(t=>t.name==="Dark aesthetic");
+    if(ai||dark)return Math.round(((ai?.avgC||0)+(dark?.avgC||0))/((ai?1:0)+(dark?1:0)));
+  }
+  return 35;
+}
+
+function trendStrength(rank,total){
+  if(!rank || !total)return 50;
+  return Math.round(100 - ((rank-1)/Math.max(1,total-1))*55);
+}
+
+function opportunityScore(trend,total){
+  const compat=trendCompatibility(trend.hashtag);
+  const t=trendStrength(trend.rank,total);
+  const n=nyraThemeScore(compat.theme);
+  const score=Math.round(t*.40+n*.35+compat.score*.25);
+  return {...trend,theme:compat.theme,compatibility:compat.score,trendScore:t,nyraScore:n,opportunity:score};
+}
+
+function renderRadar(data){
+  $("radarCard").classList.remove("hidden");
+  $("creativeCenterLink").href=data.source_url || "https://ads.tiktok.com/creative/creativeCenter/trends/hashtag?period=7&region=FR";
+  $("radarFetched").textContent=data.fetched_at ? "Dernière lecture : "+new Date(data.fetched_at).toLocaleString("fr-FR") : "";
+
+  if(!data.available){
+    $("radarStatus").textContent="Source publique temporairement indisponible";
+    $("trendMatches").innerHTML="";
+    $("noTrendMatches").classList.remove("hidden");
+    $("noTrendMatches").textContent="Le Creative Center n’a pas pu être lu automatiquement. Les analytics Nyra restent disponibles.";
+    $("radarBest").textContent="Aucune donnée de tendance en direct.";
+    return;
+  }
+
+  $("radarStatus").textContent=`${data.trends.length} tendances publiques lues · France · ${data.period_days} jours`;
+
+  const scored=data.trends.map(t=>opportunityScore(t,data.trends.length))
+    .filter(t=>t.compatibility>=25)
+    .sort((a,b)=>b.opportunity-a.opportunity);
+
+  $("noTrendMatches").classList.toggle("hidden",scored.length>0);
+
+  if(!scored.length){
+    $("trendMatches").innerHTML="";
+    $("radarBest").textContent="Aucune tendance suffisamment compatible aujourd’hui : ne force pas une trend hors univers.";
+    return;
+  }
+
+  $("trendMatches").innerHTML=scored.slice(0,8).map(t=>{
+    const cls=t.opportunity>=70?"op-high":t.opportunity>=55?"op-mid":"";
+    return `
+      <div class="trend-row">
+        <div class="trend-rank">#${t.rank||"—"}</div>
+        <div>
+          <div class="trend-name">#${esc(String(t.hashtag||"").replace(/^#/,""))}</div>
+          <div class="trend-meta">
+            ${esc(t.theme)} · Trend ${t.trendScore} · Nyra ${t.nyraScore} · Compatibilité ${t.compatibility}
+            ${t.posts_text?` · ${esc(t.posts_text)} posts`:""}
+            ${t.views_text?` · ${esc(t.views_text)} vues`:""}
+          </div>
+        </div>
+        <div class="opportunity ${cls}">
+          <b>${t.opportunity}</b><span>Opportunity</span>
+        </div>
+      </div>`;
+  }).join("");
+
+  const best=scored[0];
+  $("radarBest").innerHTML=`
+    <b>#${esc(String(best.hashtag||"").replace(/^#/,""))}</b><br>
+    <span class="muted">${esc(best.theme)} · Opportunity ${best.opportunity}/100</span><br>
+    <span style="display:inline-block;margin-top:7px">À adapter à Nyra, pas à copier littéralement.</span>
+  `;
+}
+
+async function loadRadar(){
+  $("radarCard").classList.remove("hidden");
+  $("radarStatus").textContent="Lecture du TikTok Creative Center…";
+  try{
+    const data=await call("/api/trends");
+    renderRadar(data);
+  }catch(e){
+    renderRadar({
+      available:false,
+      trends:[],
+      fetched_at:new Date().toISOString(),
+      source_url:"https://ads.tiktok.com/creative/creativeCenter/trends/hashtag?period=7&region=FR"
+    });
+  }
+}
+
+$("refreshRadar").onclick=loadRadar;
+
 async function load(){
   $("error").textContent="";
   try{
@@ -666,6 +878,7 @@ async function load(){
     }
 
     if(analyticsState)generateRandomIdea();
+    await loadRadar();
 
   }catch(e){
     $("error").textContent=e.message;
