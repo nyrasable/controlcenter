@@ -159,6 +159,35 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 .copy-row{display:flex;justify-content:flex-end;margin-top:8px}
 .copy-mini{font-size:.75rem;padding:7px 10px;border-radius:10px;background:#171723;border:1px solid var(--border)}
 
+
+.brain-shell{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+.brain-panel{background:#0b0b12;border:1px solid var(--border);border-radius:16px;padding:14px}
+.brain-title-row{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.brain-live{display:inline-flex;gap:7px;align-items:center;font-size:.78rem;color:var(--muted)}
+.brain-dot{width:8px;height:8px;border-radius:50%;background:#6ff0aa;box-shadow:0 0 12px #6ff0aa66}
+.brain-state{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.brain-meter{background:#11111a;border:1px solid var(--border);border-radius:12px;padding:10px}
+.brain-meter b{font-size:.72rem;color:var(--muted);display:block;margin-bottom:5px}
+.brain-meter strong{font-size:1.15rem}
+.brain-chat{height:360px;overflow:auto;padding:6px;display:flex;flex-direction:column;gap:10px}
+.brain-msg{max-width:88%;padding:11px 12px;border-radius:14px;line-height:1.45;white-space:pre-wrap}
+.brain-msg.nyra{align-self:flex-start;background:#151522;border:1px solid #2b2b3b}
+.brain-msg.user{align-self:flex-end;background:#252039;border:1px solid #3b3158}
+.brain-msg .who{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:900;margin-bottom:5px}
+.brain-input{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+.brain-input textarea{min-height:64px;resize:vertical;background:#0e0e16;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px;font:inherit}
+.brain-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.brain-actions button{font-size:.78rem}
+.brain-brief{line-height:1.5}
+.brain-brief h4{margin:12px 0 5px}
+.brain-sources{display:grid;gap:6px;margin-top:10px}
+.brain-source{font-size:.75rem;color:#bdb7ca;overflow-wrap:anywhere}
+.brain-memory{font-size:.76rem;color:var(--muted);margin-top:8px}
+.brain-thinking{opacity:.65;font-style:italic}
+.web-toggle{display:flex;gap:7px;align-items:center;font-size:.75rem;color:var(--muted)}
+.web-toggle input{accent-color:#8b6cff}
+@media(max-width:900px){.brain-shell{grid-template-columns:1fr}.brain-state{grid-template-columns:repeat(2,1fr)}}
+
 @media(max-width:980px){.theme-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:880px){
   .grid{grid-template-columns:1fr}
@@ -178,7 +207,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div class="logo">N</div>
     <div>
       <h1>Nyra Control Center</h1>
-      <div class="sub">TikTok creator cockpit · Analytics V3.2 · Production Pack</div>
+      <div class="sub">TikTok creator cockpit · V4 · Nyra Brain</div>
     </div>
   </div>
   <div class="actions">
@@ -274,7 +303,63 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     </div>
   </article>
 
-  <article id="radarCard" class="card full hidden">
+  
+  <article id="brainCard" class="card full">
+    <div class="brain-title-row">
+      <div>
+        <h2>🧠 Nyra Brain</h2>
+        <div class="brain-live"><span class="brain-dot"></span><span>Persona créative active</span></div>
+        <p class="muted">Nyra croise son identité, ses performances, le Radar et — si activé — le web actuel pour décider quoi explorer.</p>
+      </div>
+      <label class="web-toggle">
+        <input id="brainWeb" type="checkbox" checked>
+        Veille web en direct
+      </label>
+    </div>
+
+    <div class="brain-state">
+      <div class="brain-meter"><b>AUDACE</b><strong id="stateBoldness">74</strong><span class="muted"> /100</span></div>
+      <div class="brain-meter"><b>CURIOSITÉ</b><strong id="stateCuriosity">82</strong><span class="muted"> /100</span></div>
+      <div class="brain-meter"><b>ÉNERGIE CRÉATIVE</b><strong id="stateEnergy">78</strong><span class="muted"> /100</span></div>
+      <div class="brain-meter"><b>SATURATION</b><strong id="stateSaturation">36</strong><span class="muted"> /100</span></div>
+    </div>
+
+    <div class="brain-shell">
+      <div class="brain-panel">
+        <div class="brain-title-row">
+          <h3 style="margin:0">Parler avec Nyra</h3>
+          <button id="clearBrainMemory" class="ghost">Effacer la conversation locale</button>
+        </div>
+
+        <div class="brain-actions">
+          <button id="brainTonight">✨ Qu’est-ce que tu veux créer ce soir ?</button>
+          <button id="brainDaily">📡 Brief du jour</button>
+          <button id="brainContrarian">🎲 Surprends-moi</button>
+        </div>
+
+        <div id="brainChat" class="brain-chat"></div>
+
+        <div class="brain-input">
+          <textarea id="brainInput" placeholder="Ex. Nyra, tu as envie de faire quoi après notre dernier fit check ?"></textarea>
+          <button id="brainSend">Envoyer</button>
+        </div>
+        <div class="brain-memory">Mémoire V4 : les derniers échanges sont conservés localement dans ce navigateur.</div>
+      </div>
+
+      <div class="brain-panel">
+        <h3 style="margin-top:0">Décision créative</h3>
+        <div id="brainDecision" class="brain-brief muted">
+          Demande un brief ou parle à Nyra : sa décision apparaîtra ici avec le concept, le look, le décor et la logique.
+        </div>
+        <div id="brainSourcesWrap" class="hidden">
+          <h4>Sources web consultées</h4>
+          <div id="brainSources" class="brain-sources"></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+<article id="radarCard" class="card full hidden">
     <div class="radar-head">
       <div>
         <h2>📡 Radar TikTok France</h2>
@@ -958,6 +1043,162 @@ async function loadRadar(){
 }
 
 $("refreshRadar").onclick=loadRadar;
+
+
+const BRAIN_MEMORY_KEY="nyra_brain_memory_v4";
+const BRAIN_STATE_KEY="nyra_brain_state_v4";
+let brainBusy=false;
+
+function loadBrainMemory(){
+  try{return JSON.parse(localStorage.getItem(BRAIN_MEMORY_KEY)||"[]")}catch{return []}
+}
+function saveBrainMemory(list){
+  localStorage.setItem(BRAIN_MEMORY_KEY,JSON.stringify(list.slice(-14)));
+}
+function loadBrainState(){
+  try{
+    return JSON.parse(localStorage.getItem(BRAIN_STATE_KEY)||"null") || {
+      boldness:74, curiosity:82, energy:78, saturation:36
+    };
+  }catch{
+    return {boldness:74,curiosity:82,energy:78,saturation:36};
+  }
+}
+function saveBrainState(state){
+  localStorage.setItem(BRAIN_STATE_KEY,JSON.stringify(state));
+  renderBrainState(state);
+}
+function renderBrainState(s){
+  $("stateBoldness").textContent=Math.round(s.boldness??74);
+  $("stateCuriosity").textContent=Math.round(s.curiosity??82);
+  $("stateEnergy").textContent=Math.round(s.energy??78);
+  $("stateSaturation").textContent=Math.round(s.saturation??36);
+}
+function addBrainMessage(role,text,persist=true){
+  const el=document.createElement("div");
+  el.className="brain-msg "+(role==="user"?"user":"nyra");
+  el.innerHTML=`<div class="who">${role==="user"?"TOI":"NYRA"}</div>${esc(text)}`;
+  $("brainChat").appendChild(el);
+  $("brainChat").scrollTop=$("brainChat").scrollHeight;
+  if(persist){
+    const mem=loadBrainMemory();
+    mem.push({role,content:text,at:new Date().toISOString()});
+    saveBrainMemory(mem);
+  }
+}
+function restoreBrainChat(){
+  const mem=loadBrainMemory();
+  $("brainChat").innerHTML="";
+  if(!mem.length){
+    addBrainMessage("nyra","Je suis prête. Donne-moi une direction… ou laisse-moi regarder les signaux et choisir ce que j’ai envie d’explorer.",false);
+  }else{
+    mem.forEach(m=>addBrainMessage(m.role,m.content,false));
+  }
+}
+function brainContext(){
+  const themes=(analyticsState?.themes||[]).map(t=>({
+    name:t.name,count:t.count,reach:Math.round(t.avgR),affinity:Math.round(t.avgA),
+    score:Math.round(t.avgC),avgViews:Math.round(t.avgViews),reliable:t.count>=3
+  }));
+  const reliable=(analyticsState?.reliableThemes||[]).map(t=>t.name);
+  return {
+    account:{
+      bestHour:analyticsState?.bestHour ?? null,
+      bestDuration:analyticsState?.bestDuration ?? null,
+      bestReachTheme:analyticsState?.bestReachTheme ?? null,
+      bestAffinityTheme:analyticsState?.bestAffinityTheme ?? null,
+      themes,reliableThemes:reliable
+    },
+    creativeState:loadBrainState(),
+    recentConversation:loadBrainMemory().slice(-10)
+  };
+}
+function renderBrainDecision(data){
+  const d=data.decision||{};
+  const parts=[];
+  if(d.intent)parts.push(`<h4>Ce que je veux faire</h4><div>${esc(d.intent)}</div>`);
+  if(d.why)parts.push(`<h4>Pourquoi</h4><div>${esc(d.why)}</div>`);
+  if(d.concept)parts.push(`<h4>Concept</h4><div>${esc(d.concept)}</div>`);
+  if(d.hook)parts.push(`<h4>Hook 0–2 s</h4><div>${esc(d.hook)}</div>`);
+  if(d.look)parts.push(`<h4>Look</h4><div>${esc(d.look)}</div>`);
+  if(d.decor)parts.push(`<h4>Décor</h4><div>${esc(d.decor)}</div>`);
+  if(d.camera)parts.push(`<h4>Caméra</h4><div>${esc(d.camera)}</div>`);
+  if(d.duration)parts.push(`<h4>Durée</h4><div>${esc(d.duration)}</div>`);
+  if(d.caption)parts.push(`<h4>Caption</h4><div>${esc(d.caption)}</div>`);
+  $("brainDecision").classList.remove("muted");
+  $("brainDecision").innerHTML=parts.length?parts.join(""):"Aucune décision structurée pour cet échange.";
+
+  const sources=data.sources||[];
+  $("brainSourcesWrap").classList.toggle("hidden",!sources.length);
+  $("brainSources").innerHTML=sources.slice(0,8).map(s=>
+    `<div class="brain-source">• <a class="source-link" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||s.url)}</a></div>`
+  ).join("");
+}
+async function askNyraBrain(message,mode="chat"){
+  if(brainBusy)return;
+  brainBusy=true;
+  addBrainMessage("user",message);
+  const thinking=document.createElement("div");
+  thinking.className="brain-msg nyra brain-thinking";
+  thinking.innerHTML='<div class="who">NYRA</div>Je regarde mes signaux…';
+  $("brainChat").appendChild(thinking);
+  $("brainChat").scrollTop=$("brainChat").scrollHeight;
+
+  try{
+    const res=await fetch("/api/brain",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        message,
+        mode,
+        web:$("brainWeb").checked,
+        context:brainContext()
+      })
+    });
+    const data=await res.json();
+    thinking.remove();
+    if(!res.ok)throw new Error(data.error||"Erreur Nyra Brain");
+    addBrainMessage("nyra",data.reply||"Je n’ai rien formulé.");
+    if(data.state)saveBrainState(data.state);
+    renderBrainDecision(data);
+  }catch(e){
+    thinking.remove();
+    addBrainMessage("nyra","Je n’arrive pas à accéder à mon cerveau pour le moment : "+e.message,false);
+  }finally{
+    brainBusy=false;
+  }
+}
+$("brainSend").onclick=()=>{
+  const msg=$("brainInput").value.trim();
+  if(!msg)return;
+  $("brainInput").value="";
+  askNyraBrain(msg,"chat");
+};
+$("brainInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter" && !e.shiftKey){
+    e.preventDefault();
+    $("brainSend").click();
+  }
+});
+$("brainTonight").onclick=()=>askNyraBrain(
+  "Nyra, en regardant nos performances et ton état créatif, qu’est-ce que tu as réellement envie de créer ce soir ? Choisis une seule direction forte et prépare-la.",
+  "decision"
+);
+$("brainDaily").onclick=()=>askNyraBrain(
+  "Fais ton brief créatif du jour. Cherche les signaux récents du web si la veille est activée, élimine les tendances hors univers, puis dis-moi ce qui mérite notre attention aujourd’hui.",
+  "brief"
+);
+$("brainContrarian").onclick=()=>askNyraBrain(
+  "Surprends-moi. Évite le choix évident et propose quelque chose que Nyra n’aurait normalement pas tenté, mais qui reste cohérent avec son identité et nos données.",
+  "contrarian"
+);
+$("clearBrainMemory").onclick=()=>{
+  localStorage.removeItem(BRAIN_MEMORY_KEY);
+  restoreBrainChat();
+};
+renderBrainState(loadBrainState());
+restoreBrainChat();
+
 
 async function load(){
   $("error").textContent="";
