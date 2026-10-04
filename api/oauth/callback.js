@@ -1,13 +1,42 @@
+const crypto = require("crypto");
+
 const {
-  cookies,
-  clear,
   write
 } = require("../../lib/session");
 
 const {
-  tokenExchange,
-  appUrl
+  exchange,
+  app
 } = require("../../lib/tiktok");
+
+function verifyState(state) {
+  if (!state || typeof state !== "string") {
+    return false;
+  }
+
+  const parts = state.split(".");
+
+  if (parts.length !== 2) {
+    return false;
+  }
+
+  const [nonce, signature] = parts;
+
+  const expected = crypto
+    .createHmac("sha256", process.env.SESSION_SECRET)
+    .update(nonce)
+    .digest("hex")
+    .slice(0, 24);
+
+  if (signature.length !== expected.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
@@ -36,27 +65,19 @@ module.exports = async function handler(req, res) {
       );
     }
 
-    const expectedState = cookies(req).nyra_oauth_state;
-
-    if (
-      !state ||
-      !expectedState ||
-      state !== expectedState
-    ) {
+    if (!verifyState(state)) {
       throw new Error(
         "OAuth state invalide."
       );
     }
 
-    clear(res, "nyra_oauth_state");
-
-    const token = await tokenExchange(code);
+    const token = await exchange(code);
 
     write(res, token);
 
     return res.redirect(
       302,
-      appUrl()
+      app()
     );
 
   } catch (e) {
@@ -67,11 +88,7 @@ module.exports = async function handler(req, res) {
     return res.status(400).send(`
       <h1>TikTok OAuth error</h1>
       <p>${msg}</p>
-      <p>
-        <a href="/">
-          Retour au Nyra Control Center
-        </a>
-      </p>
+      <p><a href="/">Retour au Nyra Control Center</a></p>
     `);
   }
 };
