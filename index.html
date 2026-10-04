@@ -150,6 +150,15 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 }
 @media(max-width:700px){.raw-trends{grid-template-columns:1fr}}
 
+
+.production-pack{display:grid;gap:10px;margin-top:12px}
+.production-section{padding:12px;border:1px solid var(--border);border-radius:12px;background:#11111a}
+.production-section b{display:block;font-size:.76rem;letter-spacing:.02em;color:#bcb6ca;margin-bottom:5px}
+.prompt-block{margin-top:12px;padding:12px;border-radius:12px;background:#0d0d14;border:1px solid #2a2a3a;font-size:.86rem;line-height:1.45;color:#f2f2f6}
+.prompt-block .prompt-title{font-size:.75rem;color:#9f9aac;text-transform:uppercase;font-weight:800;letter-spacing:.05em;margin-bottom:6px}
+.copy-row{display:flex;justify-content:flex-end;margin-top:8px}
+.copy-mini{font-size:.75rem;padding:7px 10px;border-radius:10px;background:#171723;border:1px solid var(--border)}
+
 @media(max-width:980px){.theme-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:880px){
   .grid{grid-template-columns:1fr}
@@ -169,7 +178,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div class="logo">N</div>
     <div>
       <h1>Nyra Control Center</h1>
-      <div class="sub">TikTok creator cockpit · Analytics V3.1 · Radar Adaptatif</div>
+      <div class="sub">TikTok creator cockpit · Analytics V3.2 · Production Pack</div>
     </div>
   </div>
   <div class="actions">
@@ -608,61 +617,46 @@ function analyze(list){
   };
 }
 
+
 const conceptBank={
   "Dark aesthetic":[
-    "Nyra entre dans une pièce normale. À chaque cut, lumière et décor deviennent plus sombres jusqu’à ce qu’elle révèle qu’elle contrôlait la transformation.",
-    "Nyra marche devant un miroir. Son reflet s’arrête alors qu’elle continue d’avancer.",
-    "La pièce perd progressivement ses couleurs sauf Nyra, qui reste parfaitement normale."
+    {concept:"Nyra entre dans une pièce normale. À chaque cut, lumière et décor deviennent plus sombres jusqu’à ce qu’elle révèle qu’elle contrôlait la transformation.",look:"Ensemble noir structuré, matières mates avec un détail satiné, bottines noires, collier lune argent. Cheveux brun très foncé ondulés et lâchés. Maquillage dark feminine propre : eyeliner marqué, peau naturelle, lèvres nude froides.",decor:"Pièce élégante, sombre et minimaliste. Bois foncé, touches de noir, source lumineuse latérale chaude qui diminue à chaque transition.",attitude:"Confiance calme, regard direct caméra, gestes lents et précis, aucune surjoue.",camera:"Vertical 9:16, plan mi-cuisse puis plein pied, caméra fixe avec légère avance numérique au dernier plan.",evolution:"Normal → plus sombre → contraste plus fort → version finale dark premium."},
+    {concept:"Nyra marche devant un miroir. Son reflet s’arrête alors qu’elle continue d’avancer.",look:"Robe noire élégante, manches longues ou épaules structurées, collier lune, bottines fines. Cheveux lâchés naturels.",decor:"Couloir sombre moderne avec grand miroir vertical et éclairage discret.",attitude:"Expression neutre et intrigante, comme si Nyra ignorait volontairement l’anomalie.",camera:"Plan latéral fluide, travelling lent parallèle au miroir.",evolution:"Le reflet prend progressivement une demi-seconde de retard avant de s’immobiliser."}
   ],
   "Moon & Fantasy":[
-    "Une lune apparaît dans chaque reflet autour de Nyra, puis disparaît au moment où elle la regarde.",
-    "Nyra suit une lumière lunaire dans une pièce sombre ; au dernier plan, la lumière vient d’elle.",
-    "Le décor change au rythme des phases de lune en moins de 15 secondes."
+    {concept:"Une lune apparaît dans chaque reflet autour de Nyra, puis disparaît au moment où elle la regarde.",look:"Robe noire fluide avec détails argentés subtils, collier lune visible, cheveux longs ondulés. Maquillage lumineux mais sombre, reflets argentés légers sur les paupières.",decor:"Pièce nocturne élégante avec surfaces réfléchissantes, lumière bleu nuit et argent.",attitude:"Calme, fascinée, presque hypnotique.",camera:"Plans serrés sur visage et reflets, puis plan taille pour la révélation finale.",evolution:"Reflet lunaire discret → plusieurs lunes → disparition instantanée."},
+    {concept:"Nyra suit une lumière lunaire dans une pièce sombre ; au dernier plan, la lumière vient d’elle.",look:"Tenue noire minimaliste, tissu fluide, détails argentés, collier lune.",decor:"Grand espace sombre avec faisceau lunaire froid venant du fond.",attitude:"Curieuse au départ, puis assurée lorsque la lumière se révèle venir d’elle.",camera:"Travelling arrière lent, plan entier, profondeur de champ marquée.",evolution:"Lumière extérieure → lumière autour d’elle → lumière émise par Nyra."}
   ],
   "AI Girl / Digital":[
-    "Une IA construit Nyra à l’écran, puis Nyra réelle ferme elle-même l’interface.",
-    "Nyra reçoit trois choix de tenue générés par une IA et rejette le dernier pour créer le sien.",
-    "Des commandes apparaissent à l’écran comme si quelqu’un pilotait Nyra ; elle finit par reprendre le contrôle."
+    {concept:"Une IA construit Nyra à l’écran, puis Nyra réelle ferme elle-même l’interface.",look:"Robe noire minimaliste et futuriste, coupe nette, détails argentés fins, collier lune. Cheveux brun très foncé lâchés et ondulés. Maquillage dark feminine premium, sans look cyberpunk caricatural.",decor:"Univers blanc futuriste propre, presque clinique, avec interface holographique légère et lignes fines.",attitude:"D’abord immobile et observée, puis regard direct caméra quand elle prend le contrôle.",camera:"Plan vertical centré, corps entier, caméra fixe. Interface devant elle sans masquer le visage.",evolution:"Pixels → hologramme → Nyra réelle → main qui ferme l’interface."},
+    {concept:"Des commandes apparaissent à l’écran comme si quelqu’un pilotait Nyra ; elle finit par reprendre le contrôle.",look:"Top noir structuré, pantalon taille haute noir, bottines, collier lune. Style moderne et sophistiqué.",decor:"Fond blanc futuriste ou studio gris clair, UI flottante minimaliste.",attitude:"Au début docile et neutre, puis irritation légère, enfin assurance totale.",camera:"Plan taille fixe, quelques zooms courts synchronisés aux commandes.",evolution:"Commandes simples → commandes absurdes → Nyra bloque l’interface."}
   ],
   "Sport":[
-    "Workout ultra-court : trois mouvements, un détail impossible à chaque répétition, transformation finale.",
-    "Nyra commence une série classique ; son double dark termine la dernière répétition à sa place.",
-    "Challenge 12 secondes : mouvement simple, montée d’intensité, fin signature."
+    {concept:"Workout ultra-court : trois mouvements, un détail impossible à chaque répétition, transformation finale.",look:"Tenue sport noire premium : brassière sportive sobre ou débardeur ajusté, legging noir, chaussures noires. Collier lune discret. Cheveux attachés en queue haute.",decor:"Salle de sport moderne, sombre, éclairage contrasté mais lisible.",attitude:"Concentrée, sérieuse, déterminée, sourire seulement à la fin.",camera:"Plans courts et dynamiques, alternance face / trois-quarts / détail mouvement.",evolution:"Exercice normal → anomalie visuelle → double ou transformation finale."},
+    {concept:"Nyra commence une série classique ; son double dark termine la dernière répétition à sa place.",look:"Tenue sport noire simple au départ. Le double dark porte une version plus graphique avec détails argentés.",decor:"Salle de sport minimaliste, lumière froide latérale.",attitude:"Nyra concentrée ; le double affiche un calme presque insolent.",camera:"Plan fixe latéral ou trois-quarts permettant de voir clairement le remplacement.",evolution:"Nyra seule → transition pendant le mouvement → double dark."}
   ],
   "Fashion":[
-    "Fit check : à chaque passage derrière une porte, une seule pièce change jusqu’au look final.",
-    "Même pose, quatre looks : casual, chic, dark, futuriste. Le dernier change aussi le décor.",
-    "Nyra refuse trois looks imposés et construit elle-même le quatrième."
+    {concept:"Fit check : à chaque passage derrière une porte, une seule pièce change jusqu’au look final.",look:"Look 1 casual : jean noir + top blanc. Look 2 chic : pantalon noir + top structuré. Look 3 dark : total black avec bottines. Look 4 futuriste : noir/argent très épuré. Toujours conserver collier lune et visage/coiffure cohérents.",decor:"Dressing blanc/crème de Nyra, miroir cadre doré à gauche, penderies noir/blanc, tapis crème.",attitude:"Confiance naturelle, posture droite, main parfois sur la hanche, regard caméra.",camera:"Caméra fixe verticale 9:16, corps entier, même axe et même distance pour chaque look.",evolution:"Casual → chic → dark → futuriste, dernier look change aussi légèrement l’ambiance lumineuse."},
+    {concept:"Même pose, quatre looks : casual, chic, dark, futuriste. Le dernier change aussi le décor.",look:"Quatre tenues distinctes, mais même palette Nyra : blanc, noir, argent, une couleur accent maximum.",decor:"Même dressing au départ, dernier plan transformé en studio futuriste clair.",attitude:"Même pose de base pour renforcer l’effet transformation.",camera:"Plan fixe plein pied, aucun changement de cadrage entre les looks.",evolution:"Transformation par cut net ou flash très court."}
   ],
   "Glamour":[
-    "Nyra entre dans un décor très chic ; chaque cut ajoute un détail plus théâtral jusqu’à l’image finale.",
-    "Un look glamour classique bascule progressivement vers une version dark Nyra.",
-    "Plan fixe, même pose, mais lumière, bijoux et ambiance changent à chaque battement."
+    {concept:"Un look glamour classique bascule progressivement vers une version dark Nyra.",look:"Robe élégante noire ou bordeaux sombre, bijoux argentés fins, collier lune. Maquillage glamour propre, lèvres nude ou rouge profond mais sophistiqué.",decor:"Salon chic, lumière chaude, velours sombre, reflets dorés discrets.",attitude:"Élégante, sûre d’elle, regard posé.",camera:"Plan taille puis plein pied, travelling très lent.",evolution:"Glamour classique → détails noirs → contraste plus dark → final Nyra."}
   ],
   "Mini-drama / SF":[
-    "Nyra reçoit une notification de son futur : « Ne fais pas le prochain plan. » Elle regarde caméra… cut.",
-    "Une interface choisit les décisions de Nyra pendant 10 secondes ; à la fin elle la désactive.",
-    "Son reflet agit une seconde avant elle et finit par sortir du cadre."
+    {concept:"Nyra reçoit une notification de son futur : « Ne fais pas le prochain plan. » Elle regarde caméra… cut.",look:"Tenue de vie quotidienne élégante : top noir simple, jean sombre, collier lune, cheveux lâchés naturels.",decor:"Appartement moderne, lumière naturelle légèrement froide.",attitude:"D’abord naturelle, puis surprise contenue, enfin regard caméra inquiet mais maîtrisé.",camera:"Plan poitrine, téléphone visible sans masquer le visage, léger push-in à la notification.",evolution:"Routine normale → notification → silence → regard caméra → cut noir."},
+    {concept:"Une interface choisit les décisions de Nyra pendant 10 secondes ; à la fin elle la désactive.",look:"Tenue noire moderne, coupe nette, accessoires argentés.",decor:"Fond clair futuriste avec interface flottante minimaliste.",attitude:"Neutre → agacée → assurance totale.",camera:"Plan taille fixe avec UI autour d’elle.",evolution:"Choix imposés → accélération → geste final qui coupe tout."}
   ],
   "Food":[
-    "Nyra prépare une recette simple, mais un ingrédient change de place tout seul à chaque cut.",
-    "Pizza face caméra : chaque étape est normale sauf un détail de plus en plus impossible.",
-    "Recette en 15 secondes avec une chute visuelle dans les deux dernières secondes."
+    {concept:"Pizza face caméra : chaque étape est normale sauf un détail de plus en plus impossible.",look:"Tenue cuisine casual chic : top noir ou blanc, jean sombre, tablier beige ou noir simple, cheveux attachés souplement.",decor:"Cuisine moderne claire, plan de travail propre, ingrédients visibles mais pas surchargés.",attitude:"Naturelle, concentrée, amusée par l’étrangeté qui monte.",camera:"Plan taille face caméra + gros plans mains/ingrédients.",evolution:"Préparation normale → petit détail impossible → détail évident → chute."}
   ],
   "Lifestyle":[
-    "Morning routine : tout est normal jusqu’à une notification envoyée par Nyra elle-même demain.",
-    "Nyra prend un café ; son reflet réagit une seconde avant elle.",
-    "Quatre plans d’une journée banale, avec le même élément impossible caché dans chaque scène."
+    {concept:"Morning routine : tout est normal jusqu’à une notification envoyée par Nyra elle-même demain.",look:"Débardeur noir ou t-shirt blanc premium, pantalon fluide ou jean clair, collier lune. Cheveux légèrement décoiffés mais naturels.",decor:"Appartement lumineux le matin, café, miroir, lumière naturelle douce.",attitude:"Détendue et authentique, réaction subtile à la notification.",camera:"Plan main / café / visage / téléphone, montage très court.",evolution:"Routine normale → notification → détail impossible → cut."}
   ],
   "Nature / Zen":[
-    "Nyra marche dans un décor calme ; chaque pas fait apparaître un détail irréel.",
-    "Sous la pluie, le temps se fige autour de Nyra pendant deux secondes.",
-    "Nyra ferme les yeux ; à l’ouverture, le décor a changé de saison."
+    {concept:"Sous la pluie, le temps se fige autour de Nyra pendant deux secondes.",look:"Manteau noir long ou veste sombre élégante, pantalon noir, bottines, collier lune peu visible. Cheveux légèrement humides naturels.",decor:"Rue ou parc sous pluie légère, arrière-plan doux, lumière grise cinématographique.",attitude:"Calme, introspective, regard vers l’avant.",camera:"Travelling lent ou plan fixe large avec Nyra centrée.",evolution:"Pluie normale → gouttes figées → Nyra continue d’avancer → reprise du temps."}
   ],
   "Autres":[
-    "Une scène quotidienne commence normalement, puis une règle impossible apparaît dès la deuxième seconde.",
-    "Un objet banal semble connaître Nyra mieux qu’elle-même. Trois plans, une montée, une chute.",
-    "Nyra fait un geste simple et le décor entier obéit avec une seconde de retard."
+    {concept:"Une scène quotidienne commence normalement, puis une règle impossible apparaît dès la deuxième seconde.",look:"Tenue simple fidèle à Nyra : noir, blanc, coupe élégante, collier lune, coiffure naturelle.",decor:"Décor quotidien propre et lisible.",attitude:"Naturelle, puis regard caméra au moment du twist.",camera:"Plan vertical simple, mouvement minimal.",evolution:"Normal → anomalie → montée → chute."}
   ]
 };
 
@@ -674,6 +668,19 @@ function weightedPick(items,weights){
     if(r<=0)return items[i];
   }
   return items[items.length-1];
+}
+
+function buildVisualPrompt(item,theme){
+  return [
+    "Nyra Sable, jeune femme adulte, visage ovale cohérent, yeux vert émeraude, cheveux brun très foncé ondulés, peau olive claire, collier lune argent.",
+    item.look,
+    item.decor,
+    item.attitude,
+    item.camera,
+    item.evolution,
+    "Style visuel : élégant, sophistiqué, dark feminine glamour, photoréaliste premium, proportions naturelles, éclairage cinématographique propre, cohérence parfaite du visage et de la morphologie de Nyra.",
+    "Format vertical 9:16, composition TikTok, image nette, pas de texte intégré dans l’image."
+  ].join(" ");
 }
 
 function generateRandomIdea(){
@@ -694,7 +701,8 @@ function generateRandomIdea(){
   }
 
   const bank=conceptBank[theme]||conceptBank["Autres"];
-  const concept=bank[Math.floor(Math.random()*bank.length)];
+  const item=bank[Math.floor(Math.random()*bank.length)];
+
   const hour=analyticsState.bestHour!==null?`${String(analyticsState.bestHour).padStart(2,"0")}h`:"à tester";
   const dur=analyticsState.bestDuration;
 
@@ -710,6 +718,7 @@ function generateRandomIdea(){
     "Action immédiatement lisible puis événement inattendu avant 2 secondes."
   ];
   const hook=hooks[Math.floor(Math.random()*hooks.length)];
+  const visualPrompt=buildVisualPrompt(item,theme);
 
   $("idea").innerHTML=`
     <div>
@@ -718,15 +727,46 @@ function generateRandomIdea(){
       <span class="tag">≈ ${esc(hour)}</span>
       <span class="tag">${esc(objective)}</span>
     </div>
-    <h3>${esc(concept)}</h3>
+    <h3>${esc(item.concept)}</h3>
+
     <div class="idea-grid">
       <div class="idea-box"><b>HOOK 0–2 s</b>${esc(hook)}</div>
       <div class="idea-box"><b>STRUCTURE</b>Hook → évolution → twist / image finale mémorable.</div>
       <div class="idea-box"><b>OBJECTIF</b>${esc(objective)}</div>
       <div class="idea-box"><b>RÈGLE NYRA</b>Même identité, mécanisme narratif différent.</div>
     </div>
+
+    <div class="production-pack">
+      <div class="production-section"><b>LOOK NYRA</b>${esc(item.look)}</div>
+      <div class="production-section"><b>DÉCOR / AMBIANCE</b>${esc(item.decor)}</div>
+      <div class="production-section"><b>ATTITUDE / JEU</b>${esc(item.attitude)}</div>
+      <div class="production-section"><b>CAMÉRA</b>${esc(item.camera)}</div>
+      <div class="production-section"><b>ÉVOLUTION VISUELLE</b>${esc(item.evolution)}</div>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-title">Description visuelle prête à copier</div>
+      <div id="visualPromptText">${esc(visualPrompt)}</div>
+      <div class="copy-row">
+        <button class="copy-mini" id="copyVisualPrompt">Copier la description visuelle</button>
+      </div>
+    </div>
+
     <div class="note">75 % données fiables · 25 % chaos contrôlé.</div>
   `;
+
+  const btn=$("copyVisualPrompt");
+  if(btn){
+    btn.onclick=async()=>{
+      try{
+        await navigator.clipboard.writeText(visualPrompt);
+        btn.textContent="Copié ✓";
+        setTimeout(()=>btn.textContent="Copier la description visuelle",1200);
+      }catch{
+        btn.textContent="Copie impossible";
+      }
+    };
+  }
 }
 
 $("random").onclick=generateRandomIdea;
