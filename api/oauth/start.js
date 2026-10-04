@@ -1,6 +1,17 @@
 const crypto = require("crypto");
-const { set } = require("../../lib/session");
 const { authUrl } = require("../../lib/tiktok");
+
+function makeState() {
+  const nonce = crypto.randomBytes(12).toString("hex");
+
+  const signature = crypto
+    .createHmac("sha256", process.env.SESSION_SECRET)
+    .update(nonce)
+    .digest("hex")
+    .slice(0, 24);
+
+  return `${nonce}.${signature}`;
+}
 
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
@@ -8,12 +19,15 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const state = crypto.randomBytes(24).toString("hex");
+    const state = makeState();
 
-    set(res, "nyra_oauth_state", state, 600);
-
-    return res.redirect(302, authUrl(state));
+    return res.redirect(
+      302,
+      authUrl(state)
+    );
   } catch (e) {
-    return res.status(500).json({ error: e.message });
+    return res.status(500).json({
+      error: e.message
+    });
   }
 };
