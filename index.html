@@ -6,17 +6,18 @@
 <title>Nyra Control Center</title>
 <style>
 :root{
-  --p:#ff2fb3;--v:#7b4dff;--c:#48dcff;--b:#07070b;--panel:#11111a;
-  --muted:#aaa;--border:#2b2b3d;--good:#4ee49a;--warn:#ffcc66
+  --p:#ff2fb3;--v:#7b4dff;--c:#48dcff;
+  --panel:#11111a;--muted:#aaa;--border:#2b2b3d;
+  --good:#4ee49a;--warn:#ffcc66;--bad:#ff7f95
 }
 *{box-sizing:border-box}
 body{
   margin:0;
   background:radial-gradient(circle at top,#24133d,#08080d 45%);
   color:#fff;
-  font-family:system-ui,-apple-system,sans-serif
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
 }
-.wrap{max-width:1180px;margin:auto;padding:30px 20px 70px}
+.wrap{max-width:1220px;margin:auto;padding:30px 20px 70px}
 header{display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap}
 .brand{display:flex;gap:15px;align-items:center}
 .logo{
@@ -24,64 +25,89 @@ header{display:flex;justify-content:space-between;gap:20px;align-items:center;fl
   font-size:31px;font-weight:900;background:linear-gradient(145deg,var(--p),var(--v),var(--c))
 }
 h1{margin:0;font-size:clamp(2rem,5vw,3.2rem)}
+h2{margin-top:0}
 .sub,.muted{color:var(--muted)}
-.actions{display:flex;gap:10px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
 .btn,button{
   border:1px solid var(--border);border-radius:13px;padding:11px 15px;
-  color:white;background:#181824;font-weight:700;text-decoration:none;cursor:pointer
+  color:#fff;background:#181824;font-weight:700;text-decoration:none;cursor:pointer
 }
 .primary{border:0;background:linear-gradient(90deg,var(--p),var(--v))}
 .grid{display:grid;grid-template-columns:1.08fr .92fr;gap:18px;margin-top:26px}
-.card{background:rgba(17,17,26,.92);border:1px solid var(--border);border-radius:22px;padding:22px}
+.card{background:rgba(17,17,26,.94);border:1px solid var(--border);border-radius:22px;padding:22px}
 .full{grid-column:1/-1}
 .status{display:flex;gap:9px;align-items:center;color:var(--muted)}
-.dot{width:10px;height:10px;border-radius:50%;background:#666}
-.dot.ok{background:var(--good)}
+.dot{width:10px;height:10px;border-radius:50%;background:#666}.dot.ok{background:var(--good)}
 .profile{display:flex;gap:16px;align-items:center;margin-top:18px}
 .avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;background:#222}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
-.stat{padding:14px;background:#0b0b12;border:1px solid var(--border);border-radius:15px}
-.stat strong{display:block;font-size:1.45rem}
-.stat span{font-size:.82rem;color:var(--muted)}
-.random{width:100%;border:0;background:linear-gradient(90deg,var(--p),var(--v),var(--c));padding:15px}
-.idea{margin-top:15px;min-height:90px;padding:15px;background:#0b0b12;border:1px solid var(--border);border-radius:15px}
+.stat,.kpi{padding:14px;background:#0b0b12;border:1px solid var(--border);border-radius:15px}
+.stat strong,.kpi b{display:block;font-size:1.45rem}
+.stat span,.kpi span{font-size:.8rem;color:var(--muted)}
+
+.random{
+  width:100%;border:0;background:linear-gradient(90deg,var(--p),var(--v),var(--c));padding:15px
+}
+.idea{
+  margin-top:15px;min-height:150px;padding:16px;background:#0b0b12;border:1px solid var(--border);
+  border-radius:15px;line-height:1.45
+}
+.idea .tag{display:inline-block;margin:3px 5px 3px 0;padding:5px 9px;border-radius:999px;background:#181824;color:#d9c9ff;font-size:.78rem}
+.idea h3{margin:0 0 8px}
+.idea-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+.idea-box{padding:10px;border:1px solid var(--border);border-radius:12px;background:#11111a}
+.idea-box b{display:block;font-size:.78rem;color:var(--muted);margin-bottom:4px}
 
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0 18px}
-.kpi{background:#0b0b12;border:1px solid var(--border);border-radius:15px;padding:14px}
-.kpi b{display:block;font-size:1.35rem}
-.kpi span{font-size:.78rem;color:var(--muted)}
-
 .analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .panel{background:#0b0b12;border:1px solid var(--border);border-radius:15px;padding:16px}
 .panel h3{margin:0 0 10px}
-.rec{padding:10px 0;border-top:1px solid #242434}
-.rec:first-child{border-top:0}
+.rec{padding:10px 0;border-top:1px solid #242434}.rec:first-child{border-top:0}
 .score{font-weight:800;color:var(--good)}
 
-.toplist{display:grid;gap:8px}
-.topitem{
-  display:grid;grid-template-columns:44px 1fr auto;gap:10px;
-  align-items:center
+.toplist{display:grid;gap:9px}
+.topitem{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center}
+.topitem img{width:48px;height:64px;object-fit:cover;border-radius:8px;background:#171722}
+
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.theme{
+  padding:14px;background:#0b0b12;border:1px solid var(--border);border-radius:15px
 }
-.topitem img{width:44px;height:60px;object-fit:cover;border-radius:8px}
+.theme strong{display:block;font-size:1.05rem;margin-bottom:8px}
+.theme-metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.theme-metrics div{background:#12121b;border-radius:10px;padding:8px}
+.theme-metrics b{display:block;font-size:1rem}
+.theme-metrics span{font-size:.72rem;color:var(--muted)}
+
+.bar{height:7px;background:#1c1c29;border-radius:999px;overflow:hidden;margin-top:8px}
+.bar > span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--p),var(--v),var(--c))}
+.badge{
+  display:inline-block;border-radius:999px;padding:4px 8px;font-size:.72rem;font-weight:800;
+  background:#1a1a26;border:1px solid var(--border);margin-right:4px
+}
+.badge.reach{color:#7ee7ff}.badge.affinity{color:#ff92db}
 
 .videos{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .video{overflow:hidden;border:1px solid var(--border);border-radius:15px;background:#0b0b12}
 .video img{display:block;width:100%;aspect-ratio:9/16;object-fit:cover;background:#171722}
-.vbody{padding:10px}
-.metrics{font-size:.76rem;color:var(--muted)}
-
+.vbody{padding:10px}.metrics{font-size:.76rem;color:var(--muted)}
 .hidden{display:none!important}
 .error{color:#ff8d9b;white-space:pre-wrap;margin-top:12px}
-footer{margin-top:26px;color:#777;font-size:.85rem}
-footer a{color:#d9b9ff}
+.note{font-size:.8rem;color:#888;margin-top:12px}
+footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 
+@media(max-width:980px){
+  .theme-grid{grid-template-columns:repeat(2,1fr)}
+}
 @media(max-width:880px){
   .grid{grid-template-columns:1fr}
   .stats{grid-template-columns:repeat(2,1fr)}
   .videos{grid-template-columns:repeat(2,1fr)}
   .kpis{grid-template-columns:repeat(2,1fr)}
   .analysis-grid{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .theme-grid,.idea-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -93,10 +119,9 @@ footer a{color:#d9b9ff}
     <div class="logo">N</div>
     <div>
       <h1>Nyra Control Center</h1>
-      <div class="sub">TikTok creator cockpit · Analytics V1</div>
+      <div class="sub">TikTok creator cockpit · Analytics V2</div>
     </div>
   </div>
-
   <div class="actions">
     <a id="login" class="btn primary" href="/api/oauth/start">Connecter TikTok</a>
     <button id="refresh" disabled>Actualiser</button>
@@ -108,11 +133,7 @@ footer a{color:#d9b9ff}
 
   <article class="card">
     <h2>Compte Nyra</h2>
-    <div class="status">
-      <span id="dot" class="dot"></span>
-      <span id="status">Non connecté</span>
-    </div>
-
+    <div class="status"><span id="dot" class="dot"></span><span id="status">Non connecté</span></div>
     <div id="profile" class="hidden">
       <div class="profile">
         <img id="avatar" class="avatar">
@@ -121,7 +142,6 @@ footer a{color:#d9b9ff}
           <small id="openid" class="muted"></small>
         </div>
       </div>
-
       <div class="stats">
         <div class="stat"><strong id="followers">—</strong><span>Abonnés</span></div>
         <div class="stat"><strong id="following">—</strong><span>Abonnements</span></div>
@@ -129,15 +149,16 @@ footer a{color:#d9b9ff}
         <div class="stat"><strong id="videosCount">—</strong><span>Vidéos</span></div>
       </div>
     </div>
-
     <div id="error" class="error"></div>
   </article>
 
   <article class="card">
-    <h2>🎲 Nyra Random</h2>
-    <p class="muted">La prochaine version utilisera automatiquement les performances réelles pour pondérer les idées.</p>
-    <button id="random" class="random">Générer une idée random</button>
-    <div id="idea" class="idea">Le chaos créatif attend son heure 😄</div>
+    <h2>🎲 Nyra Random intelligent</h2>
+    <p class="muted">
+      Le concept est pondéré par les thèmes, la portée et l’affinité observées sur les vidéos de Nyra.
+    </p>
+    <button id="random" class="random">Générer un concept piloté par les données</button>
+    <div id="idea" class="idea">Charge les données TikTok pour réveiller le chaos créatif 😄</div>
   </article>
 
   <article id="analysisCard" class="card full hidden">
@@ -157,11 +178,40 @@ footer a{color:#d9b9ff}
         <h3>Ce qui fonctionne chez Nyra</h3>
         <div id="recommendations"></div>
       </div>
-
       <div class="panel">
-        <h3>Top 5 vidéos</h3>
+        <h3>Top 5 — score combiné</h3>
         <div id="topVideos" class="toplist"></div>
       </div>
+    </div>
+  </article>
+
+  <article id="themesCard" class="card full hidden">
+    <h2>🧠 Univers & formats</h2>
+    <p class="muted">
+      Classement automatique à partir des titres, descriptions et hashtags des 50 vidéos.
+    </p>
+    <div id="themes" class="theme-grid"></div>
+    <div class="note">
+      La catégorie est une estimation textuelle. Une future V3 pourra ajouter vision/transcription pour reconnaître le contenu réel des vidéos.
+    </div>
+  </article>
+
+  <article id="dualScoreCard" class="card full hidden">
+    <h2>🔥 Portée vs 💜 Affinité</h2>
+    <div class="analysis-grid">
+      <div class="panel">
+        <h3>🔥 Meilleure portée</h3>
+        <p class="muted">Capacité à obtenir des vues par rapport au niveau habituel du compte.</p>
+        <div id="reachTop" class="toplist"></div>
+      </div>
+      <div class="panel">
+        <h3>💜 Meilleure affinité</h3>
+        <p class="muted">Réactions obtenues chez les personnes exposées à la vidéo.</p>
+        <div id="affinityTop" class="toplist"></div>
+      </div>
+    </div>
+    <div class="note">
+      TikTok ne fournit pas ici le nombre d’abonnements gagnés vidéo par vidéo : l’affinité est donc un indicateur indirect, pas un taux de conversion en abonnés.
     </div>
   </article>
 
@@ -178,294 +228,414 @@ footer a{color:#d9b9ff}
   <a href="/privacy.html">Privacy Policy</a> ·
   Independent application, not affiliated with TikTok or ByteDance.
 </footer>
-
 </main>
 
 <script>
 const $ = id => document.getElementById(id);
 
-const ideas = [
-  "Nyra commande un café. Son reflet dans la vitre réagit deux secondes en avance.",
-  "Une recette sérieuse dégénère lentement en défi absurde.",
-  "Fit check : à chaque passage derrière une porte, un seul détail change.",
-  "Nyra reçoit une notification envoyée par elle-même… demain.",
-  "Dans le dressing, les vêtements changent de couleur lorsqu’elle détourne le regard.",
-  "Mini-drama : l’IA en fait trop sur une tenue et Nyra reprend le contrôle."
-];
-
-$("random").onclick = () => {
-  $("idea").textContent = ideas[Math.floor(Math.random() * ideas.length)];
-};
-
 const nf = new Intl.NumberFormat("fr-FR");
-const fmt = n => typeof n === "number" ? nf.format(Math.round(n)) : "—";
+const fmt = n => typeof n === "number" && Number.isFinite(n) ? nf.format(Math.round(n)) : "—";
 const pct = n => Number.isFinite(n) ? (n * 100).toFixed(1) + " %" : "—";
+const clamp = (v,min,max) => Math.max(min,Math.min(max,v));
 
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({
-  "&":"&amp;",
-  "<":"&lt;",
-  ">":"&gt;",
-  '"':"&quot;",
-  "'":"&#39;"
+const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
 
-async function call(path, opt = {}) {
-  const r = await fetch(path, { credentials:"same-origin", ...opt });
+async function call(path,opt={}) {
+  const r = await fetch(path,{credentials:"same-origin",...opt});
   const t = await r.text();
-  let d = {};
-  try { d = JSON.parse(t); } catch { d = { error:t }; }
-  if (!r.ok) throw new Error(d.error_description || d.error || ("HTTP " + r.status));
+  let d={};
+  try{d=JSON.parse(t)}catch{d={error:t}}
+  if(!r.ok) throw new Error(d.error_description||d.error||("HTTP "+r.status));
   return d;
 }
 
-const median = a => {
-  if (!a.length) return 0;
-  const s = [...a].sort((x,y)=>x-y);
-  const m = Math.floor(s.length/2);
-  return s.length % 2 ? s[m] : (s[m-1]+s[m])/2;
+const median = arr => {
+  if(!arr.length) return 0;
+  const s=[...arr].sort((a,b)=>a-b),m=Math.floor(s.length/2);
+  return s.length%2?s[m]:(s[m-1]+s[m])/2;
 };
 
-function engagement(v) {
-  const views = Number(v.view_count) || 0;
-  if (!views) return 0;
-
-  return (
-    (Number(v.like_count)||0) +
-    (Number(v.comment_count)||0) +
-    (Number(v.share_count)||0)
-  ) / views;
+function engagement(v){
+  const views=Number(v.view_count)||0;
+  if(!views) return 0;
+  return ((Number(v.like_count)||0)+(Number(v.comment_count)||0)+(Number(v.share_count)||0))/views;
 }
 
-function performanceScore(v, medViews) {
-  const views = Number(v.view_count) || 0;
-  const er = engagement(v);
-
-  const viewScore = medViews ? Math.min(3, views / medViews) : 0;
-  const engagementScore = Math.min(0.5, er) * 6;
-
-  return viewScore * 0.7 + engagementScore * 0.3;
+function weightedAffinity(v){
+  const views=Math.max(1,Number(v.view_count)||0);
+  const likes=Number(v.like_count)||0;
+  const comments=Number(v.comment_count)||0;
+  const shares=Number(v.share_count)||0;
+  return (likes + comments*2.5 + shares*4) / views;
 }
 
-function durationBand(sec) {
-  sec = Number(sec) || 0;
-  if (sec < 10) return "<10 s";
-  if (sec < 20) return "10–19 s";
-  if (sec < 35) return "20–34 s";
+function durationBand(sec){
+  sec=Number(sec)||0;
+  if(sec<10)return "<10 s";
+  if(sec<20)return "10–19 s";
+  if(sec<35)return "20–34 s";
   return "35 s+";
 }
 
-function analyze(list) {
-  const valid = list.filter(v => (Number(v.view_count)||0) > 0);
-  if (!valid.length) return;
+const themeRules = [
+  ["Sport",["workout","fitness","training","run","running","gym","sport","squat","rope","rameur","abdos","padel"]],
+  ["Dark feminine",["darkfeminine","dark feminine","moon","lune","soul","fantasy","rules","goth","black","noir","mystery"]],
+  ["Fashion",["fashion","fit check","fitcheck","outfit","look","dress","tenue","style","fashionweek","heels"]],
+  ["Food",["pizza","cook","cooking","kitchen","cuisine","tomato","tomate","recipe","recette","food"]],
+  ["Lifestyle",["morning","coffee","café","day","daily","life","selfie","routine","pov"]],
+  ["Mini-drama / SF",["ai "," ia ","hologram","future","futur","screen","pixel","control","drama","notification","mirror","reflet","freeze"]],
+  ["Nature / Zen",["nature","zen","rain","pluie","forest","forêt","water","eau","garden"]],
+];
 
-  const views = valid.map(v => Number(v.view_count)||0);
-  const med = median(views);
-  const avg = views.reduce((a,b)=>a+b,0) / views.length;
-  const avgEr = valid.reduce((a,v)=>a+engagement(v),0) / valid.length;
+function classifyTheme(v){
+  const text=(" "+(v.title||"")+" "+(v.video_description||"")+" ").toLowerCase();
+  let best="Autres",bestScore=0;
+  for(const [name,words] of themeRules){
+    let s=0;
+    for(const w of words) if(text.includes(w)) s++;
+    if(s>bestScore){best=name;bestScore=s}
+  }
+  return best;
+}
 
-  $("analysisCard").classList.remove("hidden");
-  $("analysisScope").textContent =
-    `Analyse basée sur ${valid.length} vidéos publiques récupérées via TikTok.`;
+function normalizeByMedian(value,med){
+  if(!med || value<=0) return 0;
+  return clamp(value/med,0,3)/3;
+}
 
-  $("avgViews").textContent = fmt(avg);
-  $("medianViews").textContent = fmt(med);
-  $("avgEngagement").textContent = pct(avgEr);
+function makeMetrics(list){
+  const valid=list.filter(v=>(Number(v.view_count)||0)>0);
+  const views=valid.map(v=>Number(v.view_count)||0);
+  const medViews=median(views);
+  const affinities=valid.map(weightedAffinity);
+  const medAffinity=median(affinities);
 
-  const byHour = new Map();
-  const byDuration = new Map();
+  return {valid,medViews,medAffinity};
+}
 
-  for (const v of valid) {
-    const d = new Date((Number(v.create_time)||0) * 1000);
+function reachScore(v,medViews){
+  return normalizeByMedian(Number(v.view_count)||0,medViews)*100;
+}
 
-    if (!Number.isNaN(d.getTime())) {
-      const h = d.getHours();
-      if (!byHour.has(h)) byHour.set(h, []);
+function affinityScore(v,medAffinity){
+  const a=weightedAffinity(v);
+  if(!medAffinity) return clamp(a*300,0,100);
+  return clamp((a/medAffinity)*50,0,100);
+}
+
+function combinedScore(v,medViews,medAffinity){
+  return reachScore(v,medViews)*0.48 + affinityScore(v,medAffinity)*0.52;
+}
+
+function renderVideoList(target,list,mode,metrics){
+  $(target).innerHTML=list.map((v,i)=>{
+    const r=reachScore(v,metrics.medViews);
+    const a=affinityScore(v,metrics.medAffinity);
+    let right="";
+    if(mode==="reach") right=`<span class="score">${Math.round(r)}</span>`;
+    else if(mode==="affinity") right=`<span class="score">${Math.round(a)}</span>`;
+    else right=`<span class="score">${Math.round(combinedScore(v,metrics.medViews,metrics.medAffinity))}</span>`;
+    return `
+      <div class="topitem">
+        <img src="${v.cover_image_url||""}">
+        <div>
+          <b>#${i+1} ${esc(v.title||v.video_description||"Sans titre")}</b>
+          <div class="muted">▶ ${fmt(v.view_count)} · ♥ ${fmt(v.like_count)} · 💬 ${fmt(v.comment_count)} · ↗ ${fmt(v.share_count)}</div>
+          <div style="margin-top:4px">
+            <span class="badge reach">Portée ${Math.round(r)}</span>
+            <span class="badge affinity">Affinité ${Math.round(a)}</span>
+          </div>
+        </div>
+        ${right}
+      </div>
+    `;
+  }).join("");
+}
+
+let analyticsState=null;
+
+function analyze(list){
+  const metrics=makeMetrics(list);
+  const {valid,medViews,medAffinity}=metrics;
+  if(!valid.length) return;
+
+  const avgViews=valid.reduce((s,v)=>s+(Number(v.view_count)||0),0)/valid.length;
+  const avgEng=valid.reduce((s,v)=>s+engagement(v),0)/valid.length;
+
+  const byHour=new Map(),byDuration=new Map();
+  for(const v of valid){
+    const d=new Date((Number(v.create_time)||0)*1000);
+    if(!Number.isNaN(d.getTime())){
+      const h=d.getHours();
+      if(!byHour.has(h))byHour.set(h,[]);
       byHour.get(h).push(v);
     }
-
-    const band = durationBand(v.duration);
-    if (!byDuration.has(band)) byDuration.set(band, []);
+    const band=durationBand(v.duration);
+    if(!byDuration.has(band))byDuration.set(band,[]);
     byDuration.get(band).push(v);
   }
 
-  const avgScore = arr =>
-    arr.reduce((a,v)=>a+performanceScore(v,med),0) / arr.length;
+  const groupScore=arr=>arr.reduce((s,v)=>s+combinedScore(v,medViews,medAffinity),0)/arr.length;
+  const bestHour=[...byHour.entries()].filter(([,a])=>a.length>=2).sort((a,b)=>groupScore(b[1])-groupScore(a[1]))[0];
+  const bestDuration=[...byDuration.entries()].filter(([,a])=>a.length>=2).sort((a,b)=>groupScore(b[1])-groupScore(a[1]))[0];
 
-  const bestH = [...byHour.entries()]
-    .filter(([,a])=>a.length>=2)
-    .sort((a,b)=>avgScore(b[1])-avgScore(a[1]))[0];
+  $("analysisCard").classList.remove("hidden");
+  $("themesCard").classList.remove("hidden");
+  $("dualScoreCard").classList.remove("hidden");
+  $("analysisScope").textContent=`Analyse basée sur ${valid.length} vidéos publiques récupérées via TikTok.`;
+  $("avgViews").textContent=fmt(avgViews);
+  $("medianViews").textContent=fmt(medViews);
+  $("avgEngagement").textContent=pct(avgEng);
+  $("bestHour").textContent=bestHour?`${String(bestHour[0]).padStart(2,"0")}h`:"À confirmer";
+  $("bestDuration").textContent=bestDuration?bestDuration[0]:"À confirmer";
 
-  const bestD = [...byDuration.entries()]
-    .filter(([,a])=>a.length>=2)
-    .sort((a,b)=>avgScore(b[1])-avgScore(a[1]))[0];
+  const ranked=[...valid].sort((a,b)=>combinedScore(b,medViews,medAffinity)-combinedScore(a,medViews,medAffinity));
+  renderVideoList("topVideos",ranked.slice(0,5),"combined",metrics);
 
-  $("bestHour").textContent =
-    bestH ? `${String(bestH[0]).padStart(2,"0")}h` : "Pas assez de données";
+  const reachRank=[...valid].sort((a,b)=>reachScore(b,medViews)-reachScore(a,medViews)).slice(0,5);
+  const affinityRank=[...valid].sort((a,b)=>affinityScore(b,medAffinity)-affinityScore(a,medAffinity)).slice(0,5);
+  renderVideoList("reachTop",reachRank,"reach",metrics);
+  renderVideoList("affinityTop",affinityRank,"affinity",metrics);
 
-  $("bestDuration").textContent =
-    bestD ? bestD[0] : "Pas assez de données";
+  const groups=new Map();
+  for(const v of valid){
+    const theme=classifyTheme(v);
+    if(!groups.has(theme))groups.set(theme,[]);
+    groups.get(theme).push(v);
+  }
 
-  const ranked = [...valid]
-    .sort((a,b)=>performanceScore(b,med)-performanceScore(a,med));
+  const themes=[...groups.entries()].map(([name,arr])=>{
+    const avgR=arr.reduce((s,v)=>s+reachScore(v,medViews),0)/arr.length;
+    const avgA=arr.reduce((s,v)=>s+affinityScore(v,medAffinity),0)/arr.length;
+    const avgC=arr.reduce((s,v)=>s+combinedScore(v,medViews,medAffinity),0)/arr.length;
+    const avgV=arr.reduce((s,v)=>s+(Number(v.view_count)||0),0)/arr.length;
+    return {name,arr,count:arr.length,avgR,avgA,avgC,avgV};
+  }).sort((a,b)=>b.avgC-a.avgC);
 
-  const top = ranked.slice(0,5);
-
-  $("topVideos").innerHTML = top.map((v,i)=>`
-    <div class="topitem">
-      <img src="${v.cover_image_url||""}">
-      <div>
-        <b>#${i+1} ${esc(v.title||v.video_description||"Sans titre")}</b>
-        <div class="muted">
-          ▶ ${fmt(v.view_count)} · ♥ ${fmt(v.like_count)} · ↗ ${fmt(v.share_count)}
-        </div>
+  $("themes").innerHTML=themes.map(t=>`
+    <div class="theme">
+      <strong>${esc(t.name)} <span class="muted">(${t.count})</span></strong>
+      <div class="theme-metrics">
+        <div><b>${Math.round(t.avgR)}</b><span>Portée</span></div>
+        <div><b>${Math.round(t.avgA)}</b><span>Affinité</span></div>
+        <div><b>${fmt(t.avgV)}</b><span>Vues moy.</span></div>
+        <div><b>${Math.round(t.avgC)}</b><span>Score global</span></div>
       </div>
-      <span class="score">${performanceScore(v,med).toFixed(2)}</span>
+      <div class="bar"><span style="width:${clamp(t.avgC,4,100)}%"></span></div>
     </div>
   `).join("");
 
-  const topTier = ranked.slice(0, Math.max(3, Math.ceil(ranked.length/3)));
+  const topTier=ranked.slice(0,Math.max(3,Math.ceil(ranked.length/3)));
+  const avgTopDur=topTier.reduce((s,v)=>s+(Number(v.duration)||0),0)/topTier.length;
+  const avgTopAff=topTier.reduce((s,v)=>s+weightedAffinity(v),0)/topTier.length;
 
-  const avgTopDuration =
-    topTier.reduce((a,v)=>a+(Number(v.duration)||0),0) / topTier.length;
+  const bestTheme=themes[0];
+  const bestReachTheme=[...themes].sort((a,b)=>b.avgR-a.avgR)[0];
+  const bestAffinityTheme=[...themes].sort((a,b)=>b.avgA-a.avgA)[0];
 
-  const avgTopEr =
-    topTier.reduce((a,v)=>a+engagement(v),0) / topTier.length;
-
-  const shareRateTop =
-    topTier.reduce(
-      (a,v)=>a+((Number(v.share_count)||0)/Math.max(1,Number(v.view_count)||0)),
-      0
-    ) / topTier.length;
-
-  const recs = [];
-
-  recs.push(`
+  $("recommendations").innerHTML=`
     <div class="rec">
-      <b>Priorité 1 — Répliquer les mécaniques des meilleures vidéos.</b><br>
-      <span class="muted">
-        Le top tiers tourne autour de ${fmt(avgTopDuration)} s et
-        ${pct(avgTopEr)} d’engagement moyen.
-        Garde la mécanique, mais change l’histoire, le décor ou la chute.
-      </span>
+      <b>Univers globalement le plus solide : ${esc(bestTheme?.name||"—")}</b><br>
+      <span class="muted">Meilleur équilibre actuel entre exposition et réaction du public.</span>
     </div>
-  `);
-
-  if (bestD) {
-    recs.push(`
-      <div class="rec">
-        <b>Durée à privilégier : ${bestD[0]}.</b><br>
-        <span class="muted">
-          C’est actuellement la tranche de durée au meilleur score moyen.
-        </span>
-      </div>
-    `);
-  }
-
-  if (bestH) {
-    recs.push(`
-      <div class="rec">
-        <b>Créneau à tester : autour de ${String(bestH[0]).padStart(2,"0")}h.</b><br>
-        <span class="muted">
-          C’est une corrélation observée, pas une garantie.
-          On la confirmera avec les futures publications.
-        </span>
-      </div>
-    `);
-  }
-
-  if (shareRateTop > 0.005) {
-    recs.push(`
-      <div class="rec">
-        <b>Le partage semble être un signal intéressant.</b><br>
-        <span class="muted">
-          Favorise les twists, transformations, situations surprenantes,
-          mini-dramas et concepts que les gens ont envie d’envoyer à quelqu’un.
-        </span>
-      </div>
-    `);
-  }
-
-  recs.push(`
+    <div class="rec">
+      <b>🔥 Portée : ${esc(bestReachTheme?.name||"—")}</b><br>
+      <span class="muted">Cet univers obtient le meilleur niveau moyen de vues relatif au compte.</span>
+    </div>
+    <div class="rec">
+      <b>💜 Affinité : ${esc(bestAffinityTheme?.name||"—")}</b><br>
+      <span class="muted">Cet univers déclenche le plus de réactions pondérées chez les personnes exposées.</span>
+    </div>
+    <div class="rec">
+      <b>Format cible : ${bestDuration?bestDuration[0]:"à confirmer"}, top tiers ≈ ${fmt(avgTopDur)} s.</b><br>
+      <span class="muted">Utilise surtout cette durée comme zone de test, pas comme règle rigide.</span>
+    </div>
     <div class="rec">
       <b>Objectif abonnés :</b><br>
-      <span class="muted">
-        Transforme les meilleurs concepts en séries :
-        personnage récurrent, règle créative reconnaissable,
-        suite annoncée ou univers Nyra clairement identifiable.
-      </span>
+      <span class="muted">Transformer les meilleurs univers en séries identifiables : même règle créative, même personnalité, nouvelle situation à chaque épisode.</span>
     </div>
-  `);
+  `;
 
-  $("recommendations").innerHTML = recs.join("");
+  analyticsState={
+    metrics,
+    themes,
+    bestHour:bestHour?bestHour[0]:null,
+    bestDuration:bestDuration?bestDuration[0]:"10–19 s",
+    bestTheme:bestTheme?.name||"Dark feminine",
+    bestReachTheme:bestReachTheme?.name||"Dark feminine",
+    bestAffinityTheme:bestAffinityTheme?.name||"Lifestyle"
+  };
 }
 
-async function load() {
-  $("error").textContent = "";
+const conceptBank={
+  "Dark feminine":[
+    "Nyra entre dans une pièce parfaitement normale. À chaque coupure, l’éclairage et son look basculent un cran plus dark, jusqu’à ce qu’elle regarde la caméra comme si elle avait toujours contrôlé la transformation.",
+    "Nyra marche devant un miroir. Son reflet s’arrête alors qu’elle continue d’avancer, puis reprend le contrôle de la scène.",
+    "Une lune apparaît progressivement dans les reflets autour de Nyra. Dernière seconde : elle lève les yeux et tout redevient normal."
+  ],
+  "Sport":[
+    "Nyra commence un entraînement très sérieux. À chaque répétition, un détail devient de plus en plus irréel, mais elle continue comme si de rien n’était.",
+    "POV workout : Nyra fait une série courte, puis son double dark feminine termine la dernière répétition à sa place.",
+    "Nyra lance un défi de 12 secondes : trois mouvements, une transformation visuelle finale et une pose signature."
+  ],
+  "Fashion":[
+    "Fit check à règle unique : à chaque passage derrière une porte, une seule pièce change, jusqu’au look final Nyra.",
+    "Nyra refuse trois looks imposés par une IA et construit elle-même le quatrième en une transformation rapide.",
+    "Même pose, quatre ambiances : casual, chic, dark feminine, futuriste. La dernière version brise le décor."
+  ],
+  "Food":[
+    "Nyra prépare quelque chose de très simple en cuisine, mais un ingrédient refuse littéralement de rester à sa place.",
+    "Pizza face caméra : chaque étape est normale sauf un détail qui change subtilement à chaque cut.",
+    "Recette en 15 secondes avec une chute visuelle impossible dans les deux dernières secondes."
+  ],
+  "Lifestyle":[
+    "Morning routine ultra-courte : tout semble normal jusqu’à ce que Nyra reçoive une notification envoyée par elle-même demain.",
+    "Nyra prend un café ; dans la vitre, son reflet réagit une seconde avant elle.",
+    "Une journée banale en 4 plans, mais chaque plan contient le même élément impossible caché dans le décor."
+  ],
+  "Mini-drama / SF":[
+    "Une IA choisit les décisions de Nyra pendant 10 secondes. À la fin, Nyra coupe l’interface et reprend le contrôle.",
+    "Écran blanc, création de Nyra en pixels, apparition réelle, puis elle regarde l’interface et la ferme elle-même.",
+    "Nyra reçoit un message de son futur : « Ne fais pas le prochain plan. » Elle regarde caméra… cut."
+  ],
+  "Nature / Zen":[
+    "Nyra marche dans un décor calme ; chaque pas fait apparaître un détail irréel dans la nature.",
+    "Plan zen sous la pluie, puis le temps se fige autour de Nyra pendant deux secondes.",
+    "Nyra ferme les yeux dans la nature ; à l’ouverture, le décor a changé de saison."
+  ],
+  "Autres":[
+    "Nyra vit une scène quotidienne très simple, mais une règle impossible apparaît à la deuxième seconde et devient le moteur du mini-récit.",
+    "Un objet banal semble connaître Nyra mieux qu’elle-même. Trois plans, une montée, une chute.",
+    "Nyra regarde caméra, fait un geste simple, et le décor entier obéit avec une seconde de retard."
+  ]
+};
 
-  try {
-    const me = await call("/api/me");
-    if (!me.authenticated) return;
+function weightedPick(items,weights){
+  const total=weights.reduce((a,b)=>a+b,0);
+  let r=Math.random()*total;
+  for(let i=0;i<items.length;i++){
+    r-=weights[i];
+    if(r<=0)return items[i];
+  }
+  return items[items.length-1];
+}
 
-    const u = me.user || {};
+function generateRandomIdea(){
+  if(!analyticsState){
+    $("idea").textContent="Les données TikTok ne sont pas encore chargées.";
+    return;
+  }
 
+  const useful=analyticsState.themes.filter(t=>t.name!=="Autres" || analyticsState.themes.length<3);
+  const items=useful.map(t=>t.name);
+  const weights=useful.map(t=>Math.max(8,t.avgC));
+
+  // 75 % data-driven, 25 % controlled chaos.
+  let theme;
+  if(Math.random()<0.75 && items.length){
+    theme=weightedPick(items,weights);
+  }else{
+    const all=Object.keys(conceptBank);
+    theme=all[Math.floor(Math.random()*all.length)];
+  }
+
+  const bank=conceptBank[theme]||conceptBank["Autres"];
+  const concept=bank[Math.floor(Math.random()*bank.length)];
+  const hour=analyticsState.bestHour!==null?`${String(analyticsState.bestHour).padStart(2,"0")}h`:"à tester";
+  const dur=analyticsState.bestDuration;
+  const objective=theme===analyticsState.bestAffinityTheme?"Affinité + abonnements":
+                  theme===analyticsState.bestReachTheme?"Portée + découverte":
+                  "Équilibre portée / affinité";
+
+  const hooks=[
+    "Commencer directement par l’élément anormal, sans introduction.",
+    "Premier plan très lisible + mouvement dès la première seconde.",
+    "Texte écran court : une promesse ou une anomalie, pas une explication.",
+    "Visage de Nyra dès le départ, puis événement inattendu avant 2 s."
+  ];
+  const hook=hooks[Math.floor(Math.random()*hooks.length)];
+
+  $("idea").innerHTML=`
+    <div>
+      <span class="tag">${esc(theme)}</span>
+      <span class="tag">${esc(dur)}</span>
+      <span class="tag">≈ ${esc(hour)}</span>
+      <span class="tag">${esc(objective)}</span>
+    </div>
+    <h3>${esc(concept)}</h3>
+    <div class="idea-grid">
+      <div class="idea-box"><b>HOOK 0–2 s</b>${esc(hook)}</div>
+      <div class="idea-box"><b>STRUCTURE</b>Hook → évolution visuelle → twist ou image finale mémorable.</div>
+      <div class="idea-box"><b>OBJECTIF</b>${esc(objective)}</div>
+      <div class="idea-box"><b>RÈGLE NYRA</b>Conserver son identité visuelle, mais changer le mécanisme narratif.</div>
+    </div>
+    <div class="note">75 % guidé par les performances actuelles · 25 % chaos contrôlé.</div>
+  `;
+}
+
+$("random").onclick=generateRandomIdea;
+
+async function load(){
+  $("error").textContent="";
+  try{
+    const me=await call("/api/me");
+    if(!me.authenticated)return;
+
+    const u=me.user||{};
     $("dot").classList.add("ok");
-    $("status").textContent = "Connecté à TikTok";
+    $("status").textContent="Connecté à TikTok";
     $("profile").classList.remove("hidden");
     $("login").classList.add("hidden");
     $("logout").classList.remove("hidden");
-    $("refresh").disabled = false;
+    $("refresh").disabled=false;
 
-    $("avatar").src = u.avatar_url || "";
-    $("name").textContent = u.display_name || "Nyra";
-    $("openid").textContent = u.open_id ? "Open ID : " + u.open_id : "";
+    $("avatar").src=u.avatar_url||"";
+    $("name").textContent=u.display_name||"Nyra";
+    $("openid").textContent=u.open_id?"Open ID : "+u.open_id:"";
+    $("followers").textContent=fmt(u.follower_count);
+    $("following").textContent=fmt(u.following_count);
+    $("likes").textContent=fmt(u.likes_count);
+    $("videosCount").textContent=fmt(u.video_count);
 
-    $("followers").textContent = fmt(u.follower_count);
-    $("following").textContent = fmt(u.following_count);
-    $("likes").textContent = fmt(u.likes_count);
-    $("videosCount").textContent = fmt(u.video_count);
-
-    const vv = await call("/api/videos");
-    const list = vv.videos || [];
-
+    const vv=await call("/api/videos");
+    const list=vv.videos||[];
     analyze(list);
 
-    $("videos").innerHTML = "";
-    $("empty").classList.toggle("hidden", list.length > 0);
+    $("videos").innerHTML="";
+    $("empty").classList.toggle("hidden",list.length>0);
 
-    for (const v of list.slice(0,12)) {
-      const e = document.createElement("div");
-      e.className = "video";
-
-      e.innerHTML = `
+    for(const v of list.slice(0,12)){
+      const theme=classifyTheme(v);
+      const e=document.createElement("div");
+      e.className="video";
+      e.innerHTML=`
         <img src="${v.cover_image_url||""}">
         <div class="vbody">
+          <div><span class="badge">${esc(theme)}</span></div>
           <p>${esc(v.title||v.video_description||"Sans titre")}</p>
           <div class="metrics">
-            ▶ ${fmt(v.view_count)} ·
-            ♥ ${fmt(v.like_count)} ·
-            💬 ${fmt(v.comment_count)} ·
-            ↗ ${fmt(v.share_count)}
+            ▶ ${fmt(v.view_count)} · ♥ ${fmt(v.like_count)} · 💬 ${fmt(v.comment_count)} · ↗ ${fmt(v.share_count)}
           </div>
-        </div>
-      `;
-
+        </div>`;
       $("videos").appendChild(e);
     }
 
-  } catch(e) {
-    $("error").textContent = e.message;
+    if(analyticsState) generateRandomIdea();
+
+  }catch(e){
+    $("error").textContent=e.message;
   }
 }
 
-$("refresh").onclick = load;
-
-$("logout").onclick = async () => {
+$("refresh").onclick=load;
+$("logout").onclick=async()=>{
   await call("/api/logout",{method:"POST"});
   location.reload();
 };
 
 load();
 </script>
-
 </body>
 </html>
