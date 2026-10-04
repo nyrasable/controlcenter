@@ -52,6 +52,15 @@ module.exports = async function handler(req, res) {
       error,
       error_description
     } = req.query;
+    console.log("STATE_RECEIVED", state);
+
+console.log(
+  "SESSION_SECRET_CALLBACK",
+  Boolean(process.env.SESSION_SECRET),
+  process.env.SESSION_SECRET
+    ? process.env.SESSION_SECRET.length
+    : 0
+);
 
     if (error) {
       throw new Error(
