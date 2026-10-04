@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-const { setCookie } = require("../../lib/session");
+const { set } = require("../../lib/session");
 const { authUrl } = require("../../lib/tiktok");
 
 module.exports = async function handler(req, res) {
@@ -10,7 +10,7 @@ module.exports = async function handler(req, res) {
   try {
     const state = crypto.randomBytes(24).toString("hex");
 
-    setCookie(res, "nyra_oauth_state", state, 600);
+    set(res, "nyra_oauth_state", state, 600);
 
     return res.redirect(302, authUrl(state));
   } catch (e) {
