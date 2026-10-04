@@ -1,1 +1,14 @@
-const crypto=require("crypto");const {set}=require("../../lib/session");const {authUrl}=require("../../lib/tiktok");module.exports=async(req,res)=>{if(req.method!=="GET")return res.status(405).json({error:"Method not allowed"});try{const state=crypto.randomBytes(24).toString("hex");set(res,"nyra_oauth_state",state,600);res.redirect(302,authUrl(state))}catch(e){res.status(500).json({error:e.message})}};
+const { createState } = require("../../lib/oauthState");
+const { authUrl } = require("../../lib/tiktok");
+
+module.exports = async function handler(req, res) {
+  if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+
+  try {
+    const state = createState();
+    return res.redirect(302, authUrl(state));
+  } catch (e) {
+    return res.status(500).json({ error: e.message });
+  }
+};
+Fix OAuth state
