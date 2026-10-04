@@ -93,6 +93,9 @@ console.log(
 const stateValid = verifyState(state);
 
 console.log("STATE_VERIFY_RESULT", stateValid);
+    if (!stateValid) {
+  throw new Error("OAuth state invalide.");
+}
     const token = await exchange(code);
 
     write(res, token);
