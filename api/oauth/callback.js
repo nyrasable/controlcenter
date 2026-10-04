@@ -57,6 +57,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    console.log("CALLBACK_VERSION", "V2-DEBUG-2026-10-04-1835");
     const {
       code,
       state,
