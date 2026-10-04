@@ -128,6 +128,28 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 .source-link{color:#bda9ff;text-decoration:none}
 @media(max-width:880px){.radar-grid{grid-template-columns:1fr}}
 
+
+.raw-trends{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.raw-trend{
+  padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#0d0d15;
+  display:flex;justify-content:space-between;gap:10px;align-items:center
+}
+.raw-trend .left{min-width:0}
+.raw-trend .name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.raw-trend .meta{font-size:.72rem;color:var(--muted);margin-top:3px}
+.status-chip{
+  display:inline-block;padding:4px 8px;border-radius:999px;font-size:.7rem;font-weight:900;
+  border:1px solid var(--border);white-space:nowrap
+}
+.status-hot{color:#6ff0aa;background:#10221a}
+.status-test{color:#ffd36b;background:#241f10}
+.status-low{color:#9ea0aa;background:#16161d}
+.adapt-box{
+  margin-top:8px;padding:9px 10px;border-radius:10px;background:#12121a;border:1px solid #242434;
+  font-size:.78rem;color:#ddd
+}
+@media(max-width:700px){.raw-trends{grid-template-columns:1fr}}
+
 @media(max-width:980px){.theme-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:880px){
   .grid{grid-template-columns:1fr}
@@ -147,7 +169,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div class="logo">N</div>
     <div>
       <h1>Nyra Control Center</h1>
-      <div class="sub">TikTok creator cockpit · Analytics V3 · Radar TikTok</div>
+      <div class="sub">TikTok creator cockpit · Analytics V3.1 · Radar Adaptatif</div>
     </div>
   </div>
   <div class="actions">
@@ -252,7 +274,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
           <span id="radarStatus">Chargement des tendances publiques…</span>
         </div>
         <p class="muted">
-          Croisement entre les tendances publiques TikTok Creative Center et les univers qui performent chez Nyra.
+          Le radar affiche maintenant toutes les tendances détectées, puis estime comment les adapter à l’univers de Nyra.
         </p>
       </div>
       <div class="radar-actions">
@@ -263,11 +285,8 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 
     <div class="radar-grid">
       <div class="panel">
-        <h3>Opportunités compatibles avec Nyra</h3>
+        <h3>Opportunités à adapter pour Nyra</h3>
         <div id="trendMatches" class="trend-list"></div>
-        <div id="noTrendMatches" class="muted hidden" style="padding:16px 0">
-          Aucune tendance du classement public n’est suffisamment proche de l’univers Nyra pour le moment.
-        </div>
       </div>
 
       <div class="radar-summary">
@@ -278,7 +297,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
         <div class="radar-box">
           <b>🧠 Logique du score</b>
           <div class="muted">
-            Tendance TikTok 40 % · historique Nyra 35 % · compatibilité créative 25 %.
+            Trend TikTok 40 % · historique Nyra 35 % · adaptabilité créative 25 %.
           </div>
         </div>
         <div class="radar-box">
@@ -291,9 +310,15 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
       </div>
     </div>
 
+    <div class="panel" style="margin-top:14px">
+      <h3>👀 Tendances brutes détectées</h3>
+      <p class="muted">Même les trends éloignées de Nyra restent visibles pour éviter de rater une adaptation possible.</p>
+      <div id="rawTrends" class="raw-trends"></div>
+    </div>
+
     <div class="note">
       Le Radar n’utilise pas une API TikTok privée : il lit uniquement la surface publique du Creative Center.
-      Si TikTok modifie cette page, le radar peut temporairement afficher « source indisponible » sans affecter les statistiques du compte.
+      Les suggestions sont des adaptations créatives, jamais une garantie de performance.
     </div>
   </article>
 
@@ -707,31 +732,76 @@ function generateRandomIdea(){
 $("random").onclick=generateRandomIdea;
 
 
+
 const trendThemeMap = [
-  {theme:"AI Girl / Digital", words:["ai","aigirl","artificialintelligence","digital","avatar","gemini","chatgpt","prompt","future","tech","cyber","virtual"]},
-  {theme:"Moon & Fantasy", words:["moon","luna","lunar","fantasy","witch","magic","mystic","celestial","gothic","dream","fairy"]},
-  {theme:"Fashion", words:["fashion","outfit","ootd","style","look","dress","fitcheck","beauty","makeup","glam","runway"]},
-  {theme:"Sport", words:["workout","fitness","run","running","gym","training","sport","pilates","yoga","challenge"]},
-  {theme:"Mini-drama / SF", words:["pov","story","drama","plot","cinematic","transition","transformation","edit","capcut","effect"]},
-  {theme:"Lifestyle", words:["morning","routine","coffee","dayinmylife","lifestyle","selfcare","grwm"]},
-  {theme:"Dark aesthetic", words:["dark","darkfeminine","goth","black","aesthetic","mysterious","night"]},
+  {theme:"AI Girl / Digital", words:["ai","aigirl","artificialintelligence","digital","avatar","gemini","chatgpt","prompt","future","tech","cyber","virtual","robot","filter"]},
+  {theme:"Moon & Fantasy", words:["moon","luna","lunar","fantasy","witch","magic","mystic","celestial","gothic","dream","fairy","angel","demon"]},
+  {theme:"Fashion", words:["fashion","outfit","ootd","style","look","dress","fitcheck","beauty","makeup","glam","runway","transition","beforeafter"]},
+  {theme:"Sport", words:["workout","fitness","run","running","gym","training","sport","pilates","yoga","challenge","motivation"]},
+  {theme:"Mini-drama / SF", words:["pov","story","drama","plot","cinematic","transition","transformation","edit","capcut","effect","challenge","trend"]},
+  {theme:"Lifestyle", words:["morning","routine","coffee","dayinmylife","lifestyle","selfcare","grwm","vlog"]},
+  {theme:"Dark aesthetic", words:["dark","darkfeminine","goth","black","aesthetic","mysterious","night","villain","dangerous"]},
+];
+
+const genericAdaptations = [
+  {test:["challenge","trend","dance"], theme:"Mini-drama / SF", score:52, idea:"Reprendre la mécanique du challenge, mais remplacer le geste ou la danse par une transformation Nyra en 3 étapes."},
+  {test:["transition","edit","capcut","effect"], theme:"AI Girl / Digital", score:68, idea:"Utiliser la transition comme portail visuel : Nyra passe d’un univers normal à une version digitale/dark."},
+  {test:["pov","story"], theme:"Mini-drama / SF", score:64, idea:"Transformer le POV en mini-drama Nyra avec anomalie dès la première seconde et twist final."},
+  {test:["grwm","ootd","fitcheck","fashion"], theme:"Fashion", score:72, idea:"Adapter en fit check Nyra : même pose, plusieurs looks, dernier plan qui change aussi le décor."},
+  {test:["morning","routine","vlog","dayinmylife"], theme:"Lifestyle", score:55, idea:"Garder la structure routine, mais introduire un détail impossible récurrent propre à Nyra."},
+  {test:["workout","fitness","gym","run","running"], theme:"Sport", score:72, idea:"Conserver le format sport et ajouter une transformation visuelle ou un double dark sur la dernière répétition."},
+  {test:["makeup","beauty","glam"], theme:"Glamour", score:60, idea:"Transformer le contenu beauté en montée progressive vers une version glamour/dark de Nyra."},
+  {test:["moon","fantasy","witch","magic","goth"], theme:"Moon & Fantasy", score:78, idea:"Reprendre le symbole ou l’ambiance en version lunaire/fantasy cohérente avec l’univers Nyra."},
+  {test:["ai","digital","avatar","robot","future"], theme:"AI Girl / Digital", score:82, idea:"Faire de Nyra le personnage qui reprend le contrôle d’une interface, d’un avatar ou d’une transformation numérique."}
 ];
 
 function normalizeTrendName(s){
   return String(s||"").toLowerCase().replace(/^#/,"").replace(/[^a-z0-9à-ÿ_]/g,"");
 }
 
-function trendCompatibility(name){
+function inferAdaptation(name){
   const n=normalizeTrendName(name);
-  let best={theme:"Autres",score:0};
+  let best={theme:"Autres",compatibility:18,idea:"Utiliser uniquement la mécanique de la tendance (rythme, montage, révélation) et la reconstruire dans l’univers Nyra."};
+
   for(const row of trendThemeMap){
     let score=0;
     for(const w of row.words){
       const ww=normalizeTrendName(w);
-      if(n.includes(ww) || ww.includes(n)) score+= n===ww ? 45 : 28;
+      if(!ww)continue;
+      if(n===ww)score+=55;
+      else if(n.includes(ww) || ww.includes(n))score+=32;
     }
-    if(score>best.score)best={theme:row.theme,score:Math.min(100,score)};
+    if(score>best.compatibility){
+      best={theme:row.theme,compatibility:Math.min(100,score),idea:null};
+    }
   }
+
+  for(const rule of genericAdaptations){
+    let hit=false;
+    for(const x of rule.test){
+      const xx=normalizeTrendName(x);
+      if(n.includes(xx) || xx.includes(n)){hit=true;break}
+    }
+    if(hit && rule.score>best.compatibility){
+      best={theme:rule.theme,compatibility:rule.score,idea:rule.idea};
+    }
+  }
+
+  if(!best.idea){
+    const ideas={
+      "AI Girl / Digital":"Utiliser la trend comme déclencheur d’une transformation digitale, d’une interface ou d’une reprise de contrôle par Nyra.",
+      "Moon & Fantasy":"Transformer la trend en version lunaire, mystérieuse ou fantasy sans perdre sa mécanique originale.",
+      "Fashion":"Conserver le format tendance, mais le traduire en changement de look ou transformation de décor Nyra.",
+      "Sport":"Reprendre le rythme ou le défi de la trend avec une mise en scène sport + twist visuel final.",
+      "Mini-drama / SF":"Transformer la trend en micro-histoire de 8–15 secondes avec anomalie, montée et twist.",
+      "Lifestyle":"Adapter la trend à une scène de vie simple, avec un détail impossible caractéristique de Nyra.",
+      "Dark aesthetic":"Garder la mécanique de la trend et la traiter visuellement en dark feminine / esthétique Nyra.",
+      "Glamour":"Adapter la trend à une montée glamour/dark avec transformation rapide.",
+      "Autres":"Utiliser uniquement la mécanique de la tendance et la reconstruire dans l’univers Nyra."
+    };
+    best.idea=ideas[best.theme]||ideas.Autres;
+  }
+
   return best;
 }
 
@@ -740,37 +810,47 @@ function nyraThemeScore(theme){
   const rows=analyticsState.themes||[];
   const exact=rows.find(t=>t.name===theme);
   if(exact)return Math.round(exact.avgC);
-  if(theme==="Mini-drama / SF"){
-    const ai=rows.find(t=>t.name==="AI Girl / Digital");
-    const dark=rows.find(t=>t.name==="Dark aesthetic");
-    if(ai||dark)return Math.round(((ai?.avgC||0)+(dark?.avgC||0))/((ai?1:0)+(dark?1:0)));
-  }
+
+  const fallbacks={
+    "Mini-drama / SF":["AI Girl / Digital","Dark aesthetic"],
+    "Glamour":["Fashion","Dark aesthetic"],
+    "Autres":["Fashion","AI Girl / Digital"]
+  };
+
+  const names=fallbacks[theme]||[];
+  const vals=names.map(n=>rows.find(t=>t.name===n)?.avgC).filter(Number.isFinite);
+  if(vals.length)return Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
   return 35;
 }
 
 function trendStrength(rank,total){
-  if(!rank || !total)return 50;
-  return Math.round(100 - ((rank-1)/Math.max(1,total-1))*55);
+  if(!rank||!total)return 50;
+  return Math.round(100-((rank-1)/Math.max(1,total-1))*55);
 }
 
 function opportunityScore(trend,total){
-  const compat=trendCompatibility(trend.hashtag);
+  const adapt=inferAdaptation(trend.hashtag);
   const t=trendStrength(trend.rank,total);
-  const n=nyraThemeScore(compat.theme);
-  const score=Math.round(t*.40+n*.35+compat.score*.25);
-  return {...trend,theme:compat.theme,compatibility:compat.score,trendScore:t,nyraScore:n,opportunity:score};
+  const n=nyraThemeScore(adapt.theme);
+  const score=Math.round(t*.40+n*.35+adapt.compatibility*.25);
+  return {...trend,theme:adapt.theme,compatibility:adapt.compatibility,adaptation:adapt.idea,trendScore:t,nyraScore:n,opportunity:score};
+}
+
+function statusFor(score){
+  if(score>=68)return {label:"🔥 À adapter",cls:"status-hot"};
+  if(score>=52)return {label:"🧪 À tester",cls:"status-test"};
+  return {label:"⛔ Peu pertinent",cls:"status-low"};
 }
 
 function renderRadar(data){
   $("radarCard").classList.remove("hidden");
-  $("creativeCenterLink").href=data.source_url || "https://ads.tiktok.com/creative/creativeCenter/trends/hashtag?period=7&region=FR";
-  $("radarFetched").textContent=data.fetched_at ? "Dernière lecture : "+new Date(data.fetched_at).toLocaleString("fr-FR") : "";
+  $("creativeCenterLink").href=data.source_url||"https://ads.tiktok.com/creative/creativeCenter/trends/hashtag?period=7&region=FR";
+  $("radarFetched").textContent=data.fetched_at?"Dernière lecture : "+new Date(data.fetched_at).toLocaleString("fr-FR"):"";
 
   if(!data.available){
     $("radarStatus").textContent="Source publique temporairement indisponible";
-    $("trendMatches").innerHTML="";
-    $("noTrendMatches").classList.remove("hidden");
-    $("noTrendMatches").textContent="Le Creative Center n’a pas pu être lu automatiquement. Les analytics Nyra restent disponibles.";
+    $("trendMatches").innerHTML='<div class="muted">Le Creative Center n’a pas pu être lu automatiquement.</div>';
+    $("rawTrends").innerHTML="";
     $("radarBest").textContent="Aucune donnée de tendance en direct.";
     return;
   }
@@ -778,42 +858,49 @@ function renderRadar(data){
   $("radarStatus").textContent=`${data.trends.length} tendances publiques lues · France · ${data.period_days} jours`;
 
   const scored=data.trends.map(t=>opportunityScore(t,data.trends.length))
-    .filter(t=>t.compatibility>=25)
     .sort((a,b)=>b.opportunity-a.opportunity);
 
-  $("noTrendMatches").classList.toggle("hidden",scored.length>0);
-
-  if(!scored.length){
-    $("trendMatches").innerHTML="";
-    $("radarBest").textContent="Aucune tendance suffisamment compatible aujourd’hui : ne force pas une trend hors univers.";
-    return;
-  }
-
-  $("trendMatches").innerHTML=scored.slice(0,8).map(t=>{
-    const cls=t.opportunity>=70?"op-high":t.opportunity>=55?"op-mid":"";
+  $("trendMatches").innerHTML=scored.slice(0,10).map(t=>{
+    const st=statusFor(t.opportunity);
     return `
       <div class="trend-row">
         <div class="trend-rank">#${t.rank||"—"}</div>
         <div>
           <div class="trend-name">#${esc(String(t.hashtag||"").replace(/^#/,""))}</div>
           <div class="trend-meta">
-            ${esc(t.theme)} · Trend ${t.trendScore} · Nyra ${t.nyraScore} · Compatibilité ${t.compatibility}
+            ${esc(t.theme)} · Trend ${t.trendScore} · Nyra ${t.nyraScore} · Adaptabilité ${t.compatibility}
             ${t.posts_text?` · ${esc(t.posts_text)} posts`:""}
             ${t.views_text?` · ${esc(t.views_text)} vues`:""}
           </div>
+          <div class="adapt-box">${esc(t.adaptation)}</div>
         </div>
-        <div class="opportunity ${cls}">
-          <b>${t.opportunity}</b><span>Opportunity</span>
+        <div>
+          <div class="opportunity ${t.opportunity>=68?"op-high":t.opportunity>=52?"op-mid":""}">
+            <b>${t.opportunity}</b><span>Opportunity</span>
+          </div>
+          <div style="margin-top:6px;text-align:center"><span class="status-chip ${st.cls}">${st.label}</span></div>
         </div>
       </div>`;
   }).join("");
 
+  $("rawTrends").innerHTML=scored.map(t=>{
+    const st=statusFor(t.opportunity);
+    return `
+      <div class="raw-trend">
+        <div class="left">
+          <div class="name">#${esc(String(t.hashtag||"").replace(/^#/,""))}</div>
+          <div class="meta">Rang #${t.rank||"—"} · ${esc(t.theme)} · Opportunity ${t.opportunity}</div>
+        </div>
+        <span class="status-chip ${st.cls}">${st.label}</span>
+      </div>`;
+  }).join("");
+
   const best=scored[0];
-  $("radarBest").innerHTML=`
+  $("radarBest").innerHTML=best?`
     <b>#${esc(String(best.hashtag||"").replace(/^#/,""))}</b><br>
-    <span class="muted">${esc(best.theme)} · Opportunity ${best.opportunity}/100</span><br>
-    <span style="display:inline-block;margin-top:7px">À adapter à Nyra, pas à copier littéralement.</span>
-  `;
+    <span class="muted">${esc(best.theme)} · Opportunity ${best.opportunity}/100</span>
+    <div class="adapt-box" style="margin-top:8px">${esc(best.adaptation)}</div>
+  `:"Aucune tendance exploitable.";
 }
 
 async function loadRadar(){
@@ -824,9 +911,7 @@ async function loadRadar(){
     renderRadar(data);
   }catch(e){
     renderRadar({
-      available:false,
-      trends:[],
-      fetched_at:new Date().toISOString(),
+      available:false,trends:[],fetched_at:new Date().toISOString(),
       source_url:"https://ads.tiktok.com/creative/creativeCenter/trends/hashtag?period=7&region=FR"
     });
   }
