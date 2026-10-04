@@ -20,6 +20,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const state = makeState();
+    console.log("STATE_SENT", state);
 
     return res.redirect(
       302,
