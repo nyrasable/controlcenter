@@ -89,7 +89,9 @@ console.log(
   stateReceived: Boolean(state),
   stateLength: state ? state.length : 0
 });
+const stateValid = verifyState(state);
 
+console.log("STATE_VERIFY_RESULT", stateValid);
     const token = await exchange(code);
 
     write(res, token);
