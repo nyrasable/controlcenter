@@ -73,6 +73,7 @@ h2{margin-top:0}
 .theme{
   padding:14px;background:#0b0b12;border:1px solid var(--border);border-radius:15px
 }
+.theme.weak{opacity:.78}
 .theme strong{display:block;font-size:1.05rem;margin-bottom:8px}
 .theme-metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .theme-metrics div{background:#12121b;border-radius:10px;padding:8px}
@@ -86,6 +87,7 @@ h2{margin-top:0}
   background:#1a1a26;border:1px solid var(--border);margin-right:4px
 }
 .badge.reach{color:#7ee7ff}.badge.affinity{color:#ff92db}
+.badge.signal{color:var(--warn)}
 
 .videos{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .video{overflow:hidden;border:1px solid var(--border);border-radius:15px;background:#0b0b12}
@@ -96,9 +98,7 @@ h2{margin-top:0}
 .note{font-size:.8rem;color:#888;margin-top:12px}
 footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 
-@media(max-width:980px){
-  .theme-grid{grid-template-columns:repeat(2,1fr)}
-}
+@media(max-width:980px){.theme-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:880px){
   .grid{grid-template-columns:1fr}
   .stats{grid-template-columns:repeat(2,1fr)}
@@ -106,9 +106,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
   .kpis{grid-template-columns:repeat(2,1fr)}
   .analysis-grid{grid-template-columns:1fr}
 }
-@media(max-width:620px){
-  .theme-grid,.idea-grid{grid-template-columns:1fr}
-}
+@media(max-width:620px){.theme-grid,.idea-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -119,7 +117,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div class="logo">N</div>
     <div>
       <h1>Nyra Control Center</h1>
-      <div class="sub">TikTok creator cockpit · Analytics V2</div>
+      <div class="sub">TikTok creator cockpit · Analytics V2.1</div>
     </div>
   </div>
   <div class="actions">
@@ -155,7 +153,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
   <article class="card">
     <h2>🎲 Nyra Random intelligent</h2>
     <p class="muted">
-      Le concept est pondéré par les thèmes, la portée et l’affinité observées sur les vidéos de Nyra.
+      75 % piloté par les performances fiables · 25 % chaos contrôlé.
     </p>
     <button id="random" class="random">Générer un concept piloté par les données</button>
     <div id="idea" class="idea">Charge les données TikTok pour réveiller le chaos créatif 😄</div>
@@ -188,11 +186,11 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
   <article id="themesCard" class="card full hidden">
     <h2>🧠 Univers & formats</h2>
     <p class="muted">
-      Classement automatique à partir des titres, descriptions et hashtags des 50 vidéos.
+      Sous-catégories affinées. Il faut au moins 3 vidéos pour qu’un univers puisse être déclaré « meilleur ».
     </p>
     <div id="themes" class="theme-grid"></div>
     <div class="note">
-      La catégorie est une estimation textuelle. Une future V3 pourra ajouter vision/transcription pour reconnaître le contenu réel des vidéos.
+      La catégorie reste une estimation textuelle basée sur titres, descriptions et hashtags.
     </div>
   </article>
 
@@ -201,17 +199,17 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div class="analysis-grid">
       <div class="panel">
         <h3>🔥 Meilleure portée</h3>
-        <p class="muted">Capacité à obtenir des vues par rapport au niveau habituel du compte.</p>
+        <p class="muted">Score percentile des vues parmi les 50 vidéos.</p>
         <div id="reachTop" class="toplist"></div>
       </div>
       <div class="panel">
         <h3>💜 Meilleure affinité</h3>
-        <p class="muted">Réactions obtenues chez les personnes exposées à la vidéo.</p>
+        <p class="muted">Score percentile des réactions pondérées parmi les 50 vidéos.</p>
         <div id="affinityTop" class="toplist"></div>
       </div>
     </div>
     <div class="note">
-      TikTok ne fournit pas ici le nombre d’abonnements gagnés vidéo par vidéo : l’affinité est donc un indicateur indirect, pas un taux de conversion en abonnés.
+      TikTok ne fournit pas ici les abonnements gagnés vidéo par vidéo : l’affinité reste un indicateur indirect.
     </div>
   </article>
 
@@ -232,43 +230,53 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 
 <script>
 const $ = id => document.getElementById(id);
-
 const nf = new Intl.NumberFormat("fr-FR");
 const fmt = n => typeof n === "number" && Number.isFinite(n) ? nf.format(Math.round(n)) : "—";
-const pct = n => Number.isFinite(n) ? (n * 100).toFixed(1) + " %" : "—";
-const clamp = (v,min,max) => Math.max(min,Math.min(max,v));
+const pct = n => Number.isFinite(n) ? (n*100).toFixed(1)+" %" : "—";
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 
-const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
 
-async function call(path,opt={}) {
-  const r = await fetch(path,{credentials:"same-origin",...opt});
-  const t = await r.text();
+async function call(path,opt={}){
+  const r=await fetch(path,{credentials:"same-origin",...opt});
+  const t=await r.text();
   let d={};
   try{d=JSON.parse(t)}catch{d={error:t}}
-  if(!r.ok) throw new Error(d.error_description||d.error||("HTTP "+r.status));
+  if(!r.ok)throw new Error(d.error_description||d.error||("HTTP "+r.status));
   return d;
 }
 
-const median = arr => {
-  if(!arr.length) return 0;
-  const s=[...arr].sort((a,b)=>a-b),m=Math.floor(s.length/2);
+const median=a=>{
+  if(!a.length)return 0;
+  const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);
   return s.length%2?s[m]:(s[m-1]+s[m])/2;
 };
 
 function engagement(v){
   const views=Number(v.view_count)||0;
-  if(!views) return 0;
+  if(!views)return 0;
   return ((Number(v.like_count)||0)+(Number(v.comment_count)||0)+(Number(v.share_count)||0))/views;
 }
 
-function weightedAffinity(v){
+function weightedAffinityRaw(v){
   const views=Math.max(1,Number(v.view_count)||0);
   const likes=Number(v.like_count)||0;
   const comments=Number(v.comment_count)||0;
   const shares=Number(v.share_count)||0;
   return (likes + comments*2.5 + shares*4) / views;
+}
+
+function percentileRank(value,sortedValues){
+  if(!sortedValues.length)return 0;
+  let below=0,equal=0;
+  for(const x of sortedValues){
+    if(x<value)below++;
+    else if(x===value)equal++;
+  }
+  const rank=(below + Math.max(0,equal-1)/2) / Math.max(1,sortedValues.length-1);
+  return clamp(rank*100,0,100);
 }
 
 function durationBand(sec){
@@ -280,63 +288,60 @@ function durationBand(sec){
 }
 
 const themeRules = [
-  ["Sport",["workout","fitness","training","run","running","gym","sport","squat","rope","rameur","abdos","padel"]],
-  ["Dark feminine",["darkfeminine","dark feminine","moon","lune","soul","fantasy","rules","goth","black","noir","mystery"]],
-  ["Fashion",["fashion","fit check","fitcheck","outfit","look","dress","tenue","style","fashionweek","heels"]],
-  ["Food",["pizza","cook","cooking","kitchen","cuisine","tomato","tomate","recipe","recette","food"]],
-  ["Lifestyle",["morning","coffee","café","day","daily","life","selfie","routine","pov"]],
-  ["Mini-drama / SF",["ai "," ia ","hologram","future","futur","screen","pixel","control","drama","notification","mirror","reflet","freeze"]],
-  ["Nature / Zen",["nature","zen","rain","pluie","forest","forêt","water","eau","garden"]],
+  {name:"Sport", words:[["workout",4],["fitness",4],["training",4],["run",3],["running",4],["gym",4],["sport",4],["squat",4],["rope",3],["padel",4]]},
+  {name:"Fashion", words:[["fashion",4],["fitcheck",5],["fit check",5],["outfit",5],["ootd",5],["style",3],["look",2],["dress",2],["tenue",4],["fashionweek",5]]},
+  {name:"Moon & Fantasy", words:[["moon",5],["lune",5],["moonlight",5],["fantasy",4],["soul",3],["palace",3],["lunar",5]]},
+  {name:"AI Girl / Digital", words:[["aigirl",5],["ai girl",5],["aiart",4],["ai art",4],["digitalmuse",5],["digital muse",5],["no prompt",5],["artificial",3]]},
+  {name:"Mini-drama / SF", words:[["hologram",5],["future",4],["futur",4],["pixel",4],["screen",3],["control",3],["drama",4],["notification",4],["mirror",4],["reflet",4],["freeze",4]]},
+  {name:"Glamour", words:[["glamour",5],["dangerouswoman",5],["dangerous woman",5],["heels",3],["red dress",4],["seductive",2],["aestheticvideo",2]]},
+  {name:"Food", words:[["pizza",5],["cook",4],["cooking",4],["kitchen",4],["cuisine",4],["tomato",4],["tomate",4],["recipe",4],["recette",4],["food",4]]},
+  {name:"Lifestyle", words:[["morning",4],["coffee",4],["café",4],["daily",3],["life",2],["selfie",3],["routine",4],["pov",2]]},
+  {name:"Nature / Zen", words:[["nature",5],["zen",5],["rain",4],["pluie",4],["forest",4],["forêt",4],["garden",4],["water",2]]},
+  {name:"Dark aesthetic", words:[["darkfeminine",2],["dark feminine",2],["darkaesthetics",4],["dark aesthetic",4],["black",1],["noir",1],["mysterious",2],["mystery",2]]}
 ];
 
 function classifyTheme(v){
   const text=(" "+(v.title||"")+" "+(v.video_description||"")+" ").toLowerCase();
   let best="Autres",bestScore=0;
-  for(const [name,words] of themeRules){
-    let s=0;
-    for(const w of words) if(text.includes(w)) s++;
-    if(s>bestScore){best=name;bestScore=s}
+  for(const rule of themeRules){
+    let score=0;
+    for(const [word,weight] of rule.words){
+      if(text.includes(word))score+=weight;
+    }
+    if(score>bestScore){
+      best=rule.name;
+      bestScore=score;
+    }
   }
   return best;
 }
 
-function normalizeByMedian(value,med){
-  if(!med || value<=0) return 0;
-  return clamp(value/med,0,3)/3;
-}
-
 function makeMetrics(list){
   const valid=list.filter(v=>(Number(v.view_count)||0)>0);
-  const views=valid.map(v=>Number(v.view_count)||0);
-  const medViews=median(views);
-  const affinities=valid.map(weightedAffinity);
-  const medAffinity=median(affinities);
-
-  return {valid,medViews,medAffinity};
+  const views=valid.map(v=>Number(v.view_count)||0).sort((a,b)=>a-b);
+  const affinities=valid.map(weightedAffinityRaw).sort((a,b)=>a-b);
+  return {valid,views,affinities};
 }
 
-function reachScore(v,medViews){
-  return normalizeByMedian(Number(v.view_count)||0,medViews)*100;
+function reachScore(v,metrics){
+  return percentileRank(Number(v.view_count)||0,metrics.views);
 }
 
-function affinityScore(v,medAffinity){
-  const a=weightedAffinity(v);
-  if(!medAffinity) return clamp(a*300,0,100);
-  return clamp((a/medAffinity)*50,0,100);
+function affinityScore(v,metrics){
+  return percentileRank(weightedAffinityRaw(v),metrics.affinities);
 }
 
-function combinedScore(v,medViews,medAffinity){
-  return reachScore(v,medViews)*0.48 + affinityScore(v,medAffinity)*0.52;
+function combinedScore(v,metrics){
+  return reachScore(v,metrics)*0.48 + affinityScore(v,metrics)*0.52;
 }
 
 function renderVideoList(target,list,mode,metrics){
   $(target).innerHTML=list.map((v,i)=>{
-    const r=reachScore(v,metrics.medViews);
-    const a=affinityScore(v,metrics.medAffinity);
-    let right="";
-    if(mode==="reach") right=`<span class="score">${Math.round(r)}</span>`;
-    else if(mode==="affinity") right=`<span class="score">${Math.round(a)}</span>`;
-    else right=`<span class="score">${Math.round(combinedScore(v,metrics.medViews,metrics.medAffinity))}</span>`;
+    const r=reachScore(v,metrics);
+    const a=affinityScore(v,metrics);
+    const c=combinedScore(v,metrics);
+    const right=mode==="reach"?Math.round(r):mode==="affinity"?Math.round(a):Math.round(c);
+
     return `
       <div class="topitem">
         <img src="${v.cover_image_url||""}">
@@ -348,9 +353,8 @@ function renderVideoList(target,list,mode,metrics){
             <span class="badge affinity">Affinité ${Math.round(a)}</span>
           </div>
         </div>
-        ${right}
-      </div>
-    `;
+        <span class="score">${right}</span>
+      </div>`;
   }).join("");
 }
 
@@ -358,10 +362,11 @@ let analyticsState=null;
 
 function analyze(list){
   const metrics=makeMetrics(list);
-  const {valid,medViews,medAffinity}=metrics;
-  if(!valid.length) return;
+  const valid=metrics.valid;
+  if(!valid.length)return;
 
   const avgViews=valid.reduce((s,v)=>s+(Number(v.view_count)||0),0)/valid.length;
+  const medViews=median(valid.map(v=>Number(v.view_count)||0));
   const avgEng=valid.reduce((s,v)=>s+engagement(v),0)/valid.length;
 
   const byHour=new Map(),byDuration=new Map();
@@ -377,25 +382,33 @@ function analyze(list){
     byDuration.get(band).push(v);
   }
 
-  const groupScore=arr=>arr.reduce((s,v)=>s+combinedScore(v,medViews,medAffinity),0)/arr.length;
-  const bestHour=[...byHour.entries()].filter(([,a])=>a.length>=2).sort((a,b)=>groupScore(b[1])-groupScore(a[1]))[0];
-  const bestDuration=[...byDuration.entries()].filter(([,a])=>a.length>=2).sort((a,b)=>groupScore(b[1])-groupScore(a[1]))[0];
+  const groupScore=arr=>arr.reduce((s,v)=>s+combinedScore(v,metrics),0)/arr.length;
+
+  const bestHour=[...byHour.entries()]
+    .filter(([,a])=>a.length>=3)
+    .sort((a,b)=>groupScore(b[1])-groupScore(a[1]))[0];
+
+  const bestDuration=[...byDuration.entries()]
+    .filter(([,a])=>a.length>=3)
+    .sort((a,b)=>groupScore(b[1])-groupScore(a[1]))[0];
 
   $("analysisCard").classList.remove("hidden");
   $("themesCard").classList.remove("hidden");
   $("dualScoreCard").classList.remove("hidden");
-  $("analysisScope").textContent=`Analyse basée sur ${valid.length} vidéos publiques récupérées via TikTok.`;
+
+  $("analysisScope").textContent=`Analyse basée sur ${valid.length} vidéos publiques. Les scores Portée/Affinité sont maintenant calculés en percentile sur le compte.`;
   $("avgViews").textContent=fmt(avgViews);
   $("medianViews").textContent=fmt(medViews);
   $("avgEngagement").textContent=pct(avgEng);
   $("bestHour").textContent=bestHour?`${String(bestHour[0]).padStart(2,"0")}h`:"À confirmer";
   $("bestDuration").textContent=bestDuration?bestDuration[0]:"À confirmer";
 
-  const ranked=[...valid].sort((a,b)=>combinedScore(b,medViews,medAffinity)-combinedScore(a,medViews,medAffinity));
+  const ranked=[...valid].sort((a,b)=>combinedScore(b,metrics)-combinedScore(a,metrics));
   renderVideoList("topVideos",ranked.slice(0,5),"combined",metrics);
 
-  const reachRank=[...valid].sort((a,b)=>reachScore(b,medViews)-reachScore(a,medViews)).slice(0,5);
-  const affinityRank=[...valid].sort((a,b)=>affinityScore(b,medAffinity)-affinityScore(a,medAffinity)).slice(0,5);
+  const reachRank=[...valid].sort((a,b)=>reachScore(b,metrics)-reachScore(a,metrics)).slice(0,5);
+  const affinityRank=[...valid].sort((a,b)=>affinityScore(b,metrics)-affinityScore(a,metrics)).slice(0,5);
+
   renderVideoList("reachTop",reachRank,"reach",metrics);
   renderVideoList("affinityTop",affinityRank,"affinity",metrics);
 
@@ -407,16 +420,22 @@ function analyze(list){
   }
 
   const themes=[...groups.entries()].map(([name,arr])=>{
-    const avgR=arr.reduce((s,v)=>s+reachScore(v,medViews),0)/arr.length;
-    const avgA=arr.reduce((s,v)=>s+affinityScore(v,medAffinity),0)/arr.length;
-    const avgC=arr.reduce((s,v)=>s+combinedScore(v,medViews,medAffinity),0)/arr.length;
+    const avgR=arr.reduce((s,v)=>s+reachScore(v,metrics),0)/arr.length;
+    const avgA=arr.reduce((s,v)=>s+affinityScore(v,metrics),0)/arr.length;
+    const avgC=arr.reduce((s,v)=>s+combinedScore(v,metrics),0)/arr.length;
     const avgV=arr.reduce((s,v)=>s+(Number(v.view_count)||0),0)/arr.length;
-    return {name,arr,count:arr.length,avgR,avgA,avgC,avgV};
-  }).sort((a,b)=>b.avgC-a.avgC);
+    return {name,arr,count:arr.length,avgR,avgA,avgC,avgV,reliable:arr.length>=3};
+  }).sort((a,b)=>{
+    if(a.reliable!==b.reliable)return a.reliable?-1:1;
+    return b.avgC-a.avgC;
+  });
 
   $("themes").innerHTML=themes.map(t=>`
-    <div class="theme">
-      <strong>${esc(t.name)} <span class="muted">(${t.count})</span></strong>
+    <div class="theme ${t.reliable?"":"weak"}">
+      <strong>
+        ${esc(t.name)} <span class="muted">(${t.count})</span>
+        ${t.reliable?"":'<span class="badge signal">Signal à confirmer</span>'}
+      </strong>
       <div class="theme-metrics">
         <div><b>${Math.round(t.avgR)}</b><span>Portée</span></div>
         <div><b>${Math.round(t.avgA)}</b><span>Affinité</span></div>
@@ -427,88 +446,114 @@ function analyze(list){
     </div>
   `).join("");
 
-  const topTier=ranked.slice(0,Math.max(3,Math.ceil(ranked.length/3)));
-  const avgTopDur=topTier.reduce((s,v)=>s+(Number(v.duration)||0),0)/topTier.length;
-  const avgTopAff=topTier.reduce((s,v)=>s+weightedAffinity(v),0)/topTier.length;
+  const reliable=themes.filter(t=>t.reliable);
+  const pool=reliable.length?reliable:themes;
 
-  const bestTheme=themes[0];
-  const bestReachTheme=[...themes].sort((a,b)=>b.avgR-a.avgR)[0];
-  const bestAffinityTheme=[...themes].sort((a,b)=>b.avgA-a.avgA)[0];
+  const bestTheme=[...pool].sort((a,b)=>b.avgC-a.avgC)[0];
+  const bestReachTheme=[...pool].sort((a,b)=>b.avgR-a.avgR)[0];
+  const bestAffinityTheme=[...pool].sort((a,b)=>b.avgA-a.avgA)[0];
 
-  $("recommendations").innerHTML=`
+  const recs=[];
+
+  recs.push(`
     <div class="rec">
-      <b>Univers globalement le plus solide : ${esc(bestTheme?.name||"—")}</b><br>
-      <span class="muted">Meilleur équilibre actuel entre exposition et réaction du public.</span>
-    </div>
+      <b>Univers le plus solide : ${esc(bestTheme?.name||"—")}</b><br>
+      <span class="muted">Classement limité aux univers avec au moins 3 vidéos quand c’est possible.</span>
+    </div>`);
+
+  recs.push(`
     <div class="rec">
-      <b>🔥 Portée : ${esc(bestReachTheme?.name||"—")}</b><br>
-      <span class="muted">Cet univers obtient le meilleur niveau moyen de vues relatif au compte.</span>
-    </div>
+      <b>🔥 Portée fiable : ${esc(bestReachTheme?.name||"—")}</b><br>
+      <span class="muted">Meilleur niveau moyen de vues relatif au compte parmi les univers suffisamment représentés.</span>
+    </div>`);
+
+  recs.push(`
     <div class="rec">
-      <b>💜 Affinité : ${esc(bestAffinityTheme?.name||"—")}</b><br>
-      <span class="muted">Cet univers déclenche le plus de réactions pondérées chez les personnes exposées.</span>
-    </div>
+      <b>💜 Affinité fiable : ${esc(bestAffinityTheme?.name||"—")}</b><br>
+      <span class="muted">Meilleure réaction pondérée du public parmi les univers suffisamment représentés.</span>
+    </div>`);
+
+  recs.push(`
     <div class="rec">
-      <b>Format cible : ${bestDuration?bestDuration[0]:"à confirmer"}, top tiers ≈ ${fmt(avgTopDur)} s.</b><br>
-      <span class="muted">Utilise surtout cette durée comme zone de test, pas comme règle rigide.</span>
-    </div>
+      <b>Format cible : ${bestDuration?bestDuration[0]:"à confirmer"}</b><br>
+      <span class="muted">La tranche n’est retenue que si au moins 3 vidéos l’alimentent.</span>
+    </div>`);
+
+  recs.push(`
     <div class="rec">
       <b>Objectif abonnés :</b><br>
-      <span class="muted">Transformer les meilleurs univers en séries identifiables : même règle créative, même personnalité, nouvelle situation à chaque épisode.</span>
-    </div>
-  `;
+      <span class="muted">Conserver l’identité Nyra, mais répéter les mécaniques fortes sous forme de séries plutôt que répéter exactement les mêmes vidéos.</span>
+    </div>`);
+
+  $("recommendations").innerHTML=recs.join("");
 
   analyticsState={
     metrics,
     themes,
+    reliableThemes:reliable,
     bestHour:bestHour?bestHour[0]:null,
     bestDuration:bestDuration?bestDuration[0]:"10–19 s",
-    bestTheme:bestTheme?.name||"Dark feminine",
-    bestReachTheme:bestReachTheme?.name||"Dark feminine",
-    bestAffinityTheme:bestAffinityTheme?.name||"Lifestyle"
+    bestTheme:bestTheme?.name||"Dark aesthetic",
+    bestReachTheme:bestReachTheme?.name||"Dark aesthetic",
+    bestAffinityTheme:bestAffinityTheme?.name||"Fashion"
   };
 }
 
 const conceptBank={
-  "Dark feminine":[
-    "Nyra entre dans une pièce parfaitement normale. À chaque coupure, l’éclairage et son look basculent un cran plus dark, jusqu’à ce qu’elle regarde la caméra comme si elle avait toujours contrôlé la transformation.",
-    "Nyra marche devant un miroir. Son reflet s’arrête alors qu’elle continue d’avancer, puis reprend le contrôle de la scène.",
-    "Une lune apparaît progressivement dans les reflets autour de Nyra. Dernière seconde : elle lève les yeux et tout redevient normal."
+  "Dark aesthetic":[
+    "Nyra entre dans une pièce normale. À chaque cut, lumière et décor deviennent plus sombres jusqu’à ce qu’elle révèle qu’elle contrôlait la transformation.",
+    "Nyra marche devant un miroir. Son reflet s’arrête alors qu’elle continue d’avancer.",
+    "La pièce perd progressivement ses couleurs sauf Nyra, qui reste parfaitement normale."
+  ],
+  "Moon & Fantasy":[
+    "Une lune apparaît dans chaque reflet autour de Nyra, puis disparaît au moment où elle la regarde.",
+    "Nyra suit une lumière lunaire dans une pièce sombre ; au dernier plan, la lumière vient d’elle.",
+    "Le décor change au rythme des phases de lune en moins de 15 secondes."
+  ],
+  "AI Girl / Digital":[
+    "Une IA construit Nyra à l’écran, puis Nyra réelle ferme elle-même l’interface.",
+    "Nyra reçoit trois choix de tenue générés par une IA et rejette le dernier pour créer le sien.",
+    "Des commandes apparaissent à l’écran comme si quelqu’un pilotait Nyra ; elle finit par reprendre le contrôle."
   ],
   "Sport":[
-    "Nyra commence un entraînement très sérieux. À chaque répétition, un détail devient de plus en plus irréel, mais elle continue comme si de rien n’était.",
-    "POV workout : Nyra fait une série courte, puis son double dark feminine termine la dernière répétition à sa place.",
-    "Nyra lance un défi de 12 secondes : trois mouvements, une transformation visuelle finale et une pose signature."
+    "Workout ultra-court : trois mouvements, un détail impossible à chaque répétition, transformation finale.",
+    "Nyra commence une série classique ; son double dark termine la dernière répétition à sa place.",
+    "Challenge 12 secondes : mouvement simple, montée d’intensité, fin signature."
   ],
   "Fashion":[
-    "Fit check à règle unique : à chaque passage derrière une porte, une seule pièce change, jusqu’au look final Nyra.",
-    "Nyra refuse trois looks imposés par une IA et construit elle-même le quatrième en une transformation rapide.",
-    "Même pose, quatre ambiances : casual, chic, dark feminine, futuriste. La dernière version brise le décor."
+    "Fit check : à chaque passage derrière une porte, une seule pièce change jusqu’au look final.",
+    "Même pose, quatre looks : casual, chic, dark, futuriste. Le dernier change aussi le décor.",
+    "Nyra refuse trois looks imposés et construit elle-même le quatrième."
   ],
-  "Food":[
-    "Nyra prépare quelque chose de très simple en cuisine, mais un ingrédient refuse littéralement de rester à sa place.",
-    "Pizza face caméra : chaque étape est normale sauf un détail qui change subtilement à chaque cut.",
-    "Recette en 15 secondes avec une chute visuelle impossible dans les deux dernières secondes."
-  ],
-  "Lifestyle":[
-    "Morning routine ultra-courte : tout semble normal jusqu’à ce que Nyra reçoive une notification envoyée par elle-même demain.",
-    "Nyra prend un café ; dans la vitre, son reflet réagit une seconde avant elle.",
-    "Une journée banale en 4 plans, mais chaque plan contient le même élément impossible caché dans le décor."
+  "Glamour":[
+    "Nyra entre dans un décor très chic ; chaque cut ajoute un détail plus théâtral jusqu’à l’image finale.",
+    "Un look glamour classique bascule progressivement vers une version dark Nyra.",
+    "Plan fixe, même pose, mais lumière, bijoux et ambiance changent à chaque battement."
   ],
   "Mini-drama / SF":[
-    "Une IA choisit les décisions de Nyra pendant 10 secondes. À la fin, Nyra coupe l’interface et reprend le contrôle.",
-    "Écran blanc, création de Nyra en pixels, apparition réelle, puis elle regarde l’interface et la ferme elle-même.",
-    "Nyra reçoit un message de son futur : « Ne fais pas le prochain plan. » Elle regarde caméra… cut."
+    "Nyra reçoit une notification de son futur : « Ne fais pas le prochain plan. » Elle regarde caméra… cut.",
+    "Une interface choisit les décisions de Nyra pendant 10 secondes ; à la fin elle la désactive.",
+    "Son reflet agit une seconde avant elle et finit par sortir du cadre."
+  ],
+  "Food":[
+    "Nyra prépare une recette simple, mais un ingrédient change de place tout seul à chaque cut.",
+    "Pizza face caméra : chaque étape est normale sauf un détail de plus en plus impossible.",
+    "Recette en 15 secondes avec une chute visuelle dans les deux dernières secondes."
+  ],
+  "Lifestyle":[
+    "Morning routine : tout est normal jusqu’à une notification envoyée par Nyra elle-même demain.",
+    "Nyra prend un café ; son reflet réagit une seconde avant elle.",
+    "Quatre plans d’une journée banale, avec le même élément impossible caché dans chaque scène."
   ],
   "Nature / Zen":[
-    "Nyra marche dans un décor calme ; chaque pas fait apparaître un détail irréel dans la nature.",
-    "Plan zen sous la pluie, puis le temps se fige autour de Nyra pendant deux secondes.",
-    "Nyra ferme les yeux dans la nature ; à l’ouverture, le décor a changé de saison."
+    "Nyra marche dans un décor calme ; chaque pas fait apparaître un détail irréel.",
+    "Sous la pluie, le temps se fige autour de Nyra pendant deux secondes.",
+    "Nyra ferme les yeux ; à l’ouverture, le décor a changé de saison."
   ],
   "Autres":[
-    "Nyra vit une scène quotidienne très simple, mais une règle impossible apparaît à la deuxième seconde et devient le moteur du mini-récit.",
+    "Une scène quotidienne commence normalement, puis une règle impossible apparaît dès la deuxième seconde.",
     "Un objet banal semble connaître Nyra mieux qu’elle-même. Trois plans, une montée, une chute.",
-    "Nyra regarde caméra, fait un geste simple, et le décor entier obéit avec une seconde de retard."
+    "Nyra fait un geste simple et le décor entier obéit avec une seconde de retard."
   ]
 };
 
@@ -528,14 +573,12 @@ function generateRandomIdea(){
     return;
   }
 
-  const useful=analyticsState.themes.filter(t=>t.name!=="Autres" || analyticsState.themes.length<3);
-  const items=useful.map(t=>t.name);
-  const weights=useful.map(t=>Math.max(8,t.avgC));
+  const useful=(analyticsState.reliableThemes.length?analyticsState.reliableThemes:analyticsState.themes)
+    .filter(t=>conceptBank[t.name]);
 
-  // 75 % data-driven, 25 % controlled chaos.
   let theme;
-  if(Math.random()<0.75 && items.length){
-    theme=weightedPick(items,weights);
+  if(Math.random()<0.75 && useful.length){
+    theme=weightedPick(useful.map(t=>t.name),useful.map(t=>Math.max(10,t.avgC)));
   }else{
     const all=Object.keys(conceptBank);
     theme=all[Math.floor(Math.random()*all.length)];
@@ -545,15 +588,17 @@ function generateRandomIdea(){
   const concept=bank[Math.floor(Math.random()*bank.length)];
   const hour=analyticsState.bestHour!==null?`${String(analyticsState.bestHour).padStart(2,"0")}h`:"à tester";
   const dur=analyticsState.bestDuration;
-  const objective=theme===analyticsState.bestAffinityTheme?"Affinité + abonnements":
-                  theme===analyticsState.bestReachTheme?"Portée + découverte":
-                  "Équilibre portée / affinité";
+
+  const objective=
+    theme===analyticsState.bestAffinityTheme?"Affinité + abonnements":
+    theme===analyticsState.bestReachTheme?"Portée + découverte":
+    "Équilibre portée / affinité";
 
   const hooks=[
-    "Commencer directement par l’élément anormal, sans introduction.",
-    "Premier plan très lisible + mouvement dès la première seconde.",
-    "Texte écran court : une promesse ou une anomalie, pas une explication.",
-    "Visage de Nyra dès le départ, puis événement inattendu avant 2 s."
+    "Commencer directement par l’anomalie, sans introduction.",
+    "Visage de Nyra dès le premier plan + mouvement avant 1 seconde.",
+    "Texte écran très court : une promesse ou une anomalie.",
+    "Action immédiatement lisible puis événement inattendu avant 2 secondes."
   ];
   const hook=hooks[Math.floor(Math.random()*hooks.length)];
 
@@ -567,11 +612,11 @@ function generateRandomIdea(){
     <h3>${esc(concept)}</h3>
     <div class="idea-grid">
       <div class="idea-box"><b>HOOK 0–2 s</b>${esc(hook)}</div>
-      <div class="idea-box"><b>STRUCTURE</b>Hook → évolution visuelle → twist ou image finale mémorable.</div>
+      <div class="idea-box"><b>STRUCTURE</b>Hook → évolution → twist / image finale mémorable.</div>
       <div class="idea-box"><b>OBJECTIF</b>${esc(objective)}</div>
-      <div class="idea-box"><b>RÈGLE NYRA</b>Conserver son identité visuelle, mais changer le mécanisme narratif.</div>
+      <div class="idea-box"><b>RÈGLE NYRA</b>Même identité, mécanisme narratif différent.</div>
     </div>
-    <div class="note">75 % guidé par les performances actuelles · 25 % chaos contrôlé.</div>
+    <div class="note">75 % données fiables · 25 % chaos contrôlé.</div>
   `;
 }
 
@@ -615,14 +660,12 @@ async function load(){
         <div class="vbody">
           <div><span class="badge">${esc(theme)}</span></div>
           <p>${esc(v.title||v.video_description||"Sans titre")}</p>
-          <div class="metrics">
-            ▶ ${fmt(v.view_count)} · ♥ ${fmt(v.like_count)} · 💬 ${fmt(v.comment_count)} · ↗ ${fmt(v.share_count)}
-          </div>
+          <div class="metrics">▶ ${fmt(v.view_count)} · ♥ ${fmt(v.like_count)} · 💬 ${fmt(v.comment_count)} · ↗ ${fmt(v.share_count)}</div>
         </div>`;
       $("videos").appendChild(e);
     }
 
-    if(analyticsState) generateRandomIdea();
+    if(analyticsState)generateRandomIdea();
 
   }catch(e){
     $("error").textContent=e.message;
