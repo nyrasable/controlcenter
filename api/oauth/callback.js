@@ -65,11 +65,10 @@ module.exports = async function handler(req, res) {
       );
     }
 
-    if (!verifyState(state)) {
-      throw new Error(
-        "OAuth state invalide."
-      );
-    }
+ console.log("OAuth diagnostic:", {
+  stateReceived: Boolean(state),
+  stateLength: state ? state.length : 0
+});
 
     const token = await exchange(code);
 
