@@ -1,1 +1,26 @@
-const {cookies,clear,write}=require("../../lib/session");const {exchange,app}=require("../../lib/tiktok");module.exports=async(req,res)=>{if(req.method!=="GET")return res.status(405).json({error:"Method not allowed"});try{const {code,state,error,error_description}=req.query;if(error)throw new Error(error_description||error);const expected=cookies(req).nyra_oauth_state;if(!code||!state||!expected||state!==expected)throw new Error("OAuth state invalide");const token=await exchange(code);write(res,token);clear(res,"nyra_oauth_state");res.redirect(302,app())}catch(e){res.status(400).send(`<h1>TikTok OAuth error</h1><p>${String(e.message).replace(/[<>&]/g,"")}</p>`)}};
+const { verifyState } = require("../../lib/oauthState");
+const { writeSession } = require("../../lib/session");
+const { tokenExchange, appUrl } = require("../../lib/tiktok");
+
+module.exports = async function handler(req, res) {
+  if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+
+  try {
+    const { code, state, error, error_description } = req.query;
+
+    if (error) throw new Error(error_description || error);
+    if (!code) throw new Error("Code OAuth manquant.");
+    if (!verifyState(state)) throw new Error("OAuth state invalide.");
+
+    const token = await tokenExchange(code);
+    writeSession(res, token);
+
+    return res.redirect(302, appUrl());
+  } catch (e) {
+    const msg = String(e.message || e).replace(/[<>&]/g, "");
+    return res.status(400).send(
+      `<h1>TikTok OAuth error</h1><p>${msg}</p><p><a href="/">Retour au Nyra Control Center</a></p>`
+    );
+  }
+};
+Fix OAuth state
