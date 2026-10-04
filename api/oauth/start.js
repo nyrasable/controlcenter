@@ -20,6 +20,14 @@ module.exports = async function handler(req, res) {
 
   try {
     const state = makeState();
+    const secretFingerprint = crypto
+  .createHash("sha256")
+  .update(process.env.SESSION_SECRET)
+  .digest("hex")
+  .slice(0, 12);
+
+console.log("START_SECRET_FP", secretFingerprint);
+console.log("STATE_SENT", state);
     console.log("STATE_SENT", state);
     console.log(
   "SESSION_SECRET_START",
