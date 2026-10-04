@@ -21,6 +21,13 @@ module.exports = async function handler(req, res) {
   try {
     const state = makeState();
     console.log("STATE_SENT", state);
+    console.log(
+  "SESSION_SECRET_START",
+  Boolean(process.env.SESSION_SECRET),
+  process.env.SESSION_SECRET
+    ? process.env.SESSION_SECRET.length
+    : 0
+);
 
     return res.redirect(
       302,
