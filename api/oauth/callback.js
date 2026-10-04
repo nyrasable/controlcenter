@@ -1,5 +1,4 @@
 const {
-  parseCookies,
   clearCookie,
   writeSession
 } = require("../../lib/session");
@@ -9,9 +8,27 @@ const {
   appUrl
 } = require("../../lib/tiktok");
 
+function getCookie(req, name) {
+  const cookieHeader = req.headers.cookie || "";
+
+  const cookies = cookieHeader.split(";");
+
+  for (const cookie of cookies) {
+    const [key, ...valueParts] = cookie.trim().split("=");
+
+    if (key === name) {
+      return decodeURIComponent(valueParts.join("="));
+    }
+  }
+
+  return null;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
   }
 
   try {
@@ -23,35 +40,61 @@ module.exports = async function handler(req, res) {
     } = req.query;
 
     if (error) {
-      throw new Error(error_description || error);
+      throw new Error(
+        error_description || error
+      );
     }
 
     if (!code) {
-      throw new Error("Code OAuth manquant.");
+      throw new Error(
+        "Code OAuth manquant."
+      );
     }
 
-    const cookies = parseCookies(req);
-    const expectedState = cookies.nyra_oauth_state;
+    const expectedState = getCookie(
+      req,
+      "nyra_oauth_state"
+    );
 
-    if (!state || !expectedState || state !== expectedState) {
-      throw new Error("OAuth state invalide.");
+    if (
+      !state ||
+      !expectedState ||
+      state !== expectedState
+    ) {
+      throw new Error(
+        "OAuth state invalide."
+      );
     }
 
-    clearCookie(res, "nyra_oauth_state");
+    clearCookie(
+      res,
+      "nyra_oauth_state"
+    );
 
     const token = await tokenExchange(code);
 
     writeSession(res, token);
 
-    return res.redirect(302, appUrl());
+    return res.redirect(
+      302,
+      appUrl()
+    );
 
   } catch (e) {
-    const msg = String(e.message || e).replace(/[<>&]/g, "");
+    const msg = String(
+      e.message || e
+    ).replace(/[<>&]/g, "");
 
     return res.status(400).send(`
       <h1>TikTok OAuth error</h1>
+
       <p>${msg}</p>
-      <p><a href="/">Retour au Nyra Control Center</a></p>
+
+      <p>
+        <a href="/">
+          Retour au Nyra Control Center
+        </a>
+      </p>
     `);
   }
 };
