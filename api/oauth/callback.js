@@ -1,28 +1,13 @@
 const {
-  clearCookie,
-  writeSession
+  cookies,
+  clear,
+  write
 } = require("../../lib/session");
 
 const {
   tokenExchange,
   appUrl
 } = require("../../lib/tiktok");
-
-function getCookie(req, name) {
-  const cookieHeader = req.headers.cookie || "";
-
-  const cookies = cookieHeader.split(";");
-
-  for (const cookie of cookies) {
-    const [key, ...valueParts] = cookie.trim().split("=");
-
-    if (key === name) {
-      return decodeURIComponent(valueParts.join("="));
-    }
-  }
-
-  return null;
-}
 
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
@@ -51,10 +36,7 @@ module.exports = async function handler(req, res) {
       );
     }
 
-    const expectedState = getCookie(
-      req,
-      "nyra_oauth_state"
-    );
+    const expectedState = cookies(req).nyra_oauth_state;
 
     if (
       !state ||
@@ -66,14 +48,11 @@ module.exports = async function handler(req, res) {
       );
     }
 
-    clearCookie(
-      res,
-      "nyra_oauth_state"
-    );
+    clear(res, "nyra_oauth_state");
 
     const token = await tokenExchange(code);
 
-    writeSession(res, token);
+    write(res, token);
 
     return res.redirect(
       302,
@@ -87,9 +66,7 @@ module.exports = async function handler(req, res) {
 
     return res.status(400).send(`
       <h1>TikTok OAuth error</h1>
-
       <p>${msg}</p>
-
       <p>
         <a href="/">
           Retour au Nyra Control Center
