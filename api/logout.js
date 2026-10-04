@@ -1,0 +1,1 @@
+const {clear}=require("../lib/session");module.exports=async(req,res)=>{if(req.method!=="POST")return res.status(405).json({error:"Method not allowed"});clear(res,"nyra_session");res.status(200).json({ok:true})};
