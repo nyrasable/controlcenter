@@ -211,6 +211,23 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 .result-line{margin-top:8px;font-size:.75rem;color:#c7c3cf}
 @media(max-width:900px){.memory-grid{grid-template-columns:1fr}}
 
+
+.creator-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.creator-health{font-size:.74rem;color:var(--muted)}
+.creator-link{margin-top:9px;padding:9px;border:1px dashed var(--border);border-radius:10px;background:#0e0e16}
+.creator-link b{font-size:.74rem}
+.creator-select{width:100%;margin-top:7px;background:#0d0d15;color:var(--text);border:1px solid var(--border);border-radius:9px;padding:8px}
+.creator-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}
+.creator-kpi{background:#11111a;border:1px solid var(--border);border-radius:9px;padding:7px}
+.creator-kpi b{display:block;font-size:.63rem;color:var(--muted);margin-bottom:3px}
+.creator-kpi strong{font-size:.88rem}
+.creator-verdict{margin-top:8px;padding:8px 10px;border-radius:9px;background:#11111a;border-left:3px solid #8b6cff;font-size:.76rem;line-height:1.4}
+.snapshot-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.snapshot{font-size:.64rem;padding:4px 7px;border-radius:999px;background:#13131d;border:1px solid var(--border);color:#bdb7ca}
+.sync-ok{color:#6ff0aa}
+.sync-wait{color:#ffd36b}
+@media(max-width:700px){.creator-kpis{grid-template-columns:repeat(2,1fr)}}
+
 @media(max-width:980px){.theme-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:880px){
   .grid{grid-template-columns:1fr}
@@ -230,7 +247,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div class="logo">N</div>
     <div>
       <h1>Nyra Control Center</h1>
-      <div class="sub">TikTok creator cockpit · V4.1 · Memory & Learning</div>
+      <div class="sub">TikTok creator cockpit · V4.2 · Creator Loop</div>
     </div>
   </div>
   <div class="actions">
@@ -390,12 +407,19 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
         <div id="memoryStatus" class="memory-status"><span class="dot"></span><span>Chargement de la mémoire…</span></div>
         <p class="muted">Chaque décision de Nyra peut être suivie jusqu’au résultat réel. Le Brain réutilise ensuite cet historique pour ses prochains choix.</p>
       </div>
-      <button id="refreshMemory" class="ghost">Actualiser</button>
+      <div class="creator-toolbar">
+        <span id="creatorSyncStatus" class="creator-health">TikTok non synchronisé</span>
+        <button id="syncCreatorLoop">🔄 Synchroniser TikTok</button>
+        <button id="refreshMemory" class="ghost">Actualiser</button>
+      </div>
     </div>
 
     <div class="memory-grid">
       <div class="learning-box">
         <h3>🧠 Ce que Nyra apprend</h3>
+        <div class="muted" style="font-size:.75rem;margin:-4px 0 10px">
+          V4.2 suit une idée jusqu’à sa vraie vidéo TikTok, puis mémorise ses résultats.
+        </div>
         <div id="learningSummary" class="learning-list">
           <div class="muted">Pas encore assez de résultats enregistrés.</div>
         </div>
@@ -743,6 +767,7 @@ function analyze(list){
   $("recommendations").innerHTML=recs.join("");
 
   analyticsState={
+    medianViews:medViews,
     metrics,
     themes,
     reliableThemes:reliable,
@@ -1098,6 +1123,104 @@ $("refreshRadar").onclick=loadRadar;
 
 
 
+
+let latestTikTokVideos=[];
+
+function videoLabel(v){
+  const title=(v.title||v.video_description||"Sans titre").trim();
+  const dt=v.create_time ? new Date(Number(v.create_time)*1000).toLocaleDateString("fr-FR") : "";
+  return `${dt} · ${title.slice(0,72)} · ${fmt(v.view_count)} vues`;
+}
+function getVideoById(id){
+  return latestTikTokVideos.find(v=>String(v.id)===String(id));
+}
+function snapshotStage(createdAt){
+  if(!createdAt)return "live";
+  const hours=(Date.now()-new Date(createdAt).getTime())/3600000;
+  if(hours>=168)return "7j";
+  if(hours>=72)return "72h";
+  if(hours>=24)return "24h";
+  return "live";
+}
+function performanceVerdict(result){
+  const views=Number(result?.views||0);
+  const med=Number(analyticsState?.medianViews||0);
+  const engagement=calcEngagement(result);
+  let reach="Pas assez de recul.";
+  if(med>0){
+    const delta=((views/med)-1)*100;
+    reach=delta>=0
+      ? `Portée ${Math.abs(delta).toFixed(0)} % au-dessus de la médiane du compte.`
+      : `Portée ${Math.abs(delta).toFixed(0)} % sous la médiane du compte.`;
+  }
+  return `${reach} Engagement observé : ${engagement.toFixed(1)} %.`;
+}
+async function linkDecisionToVideo(decisionId,videoId){
+  const v=getVideoById(videoId);
+  if(!v)return;
+  const patch={
+    linkedVideoId:String(v.id),
+    linkedVideoTitle:v.title||v.video_description||"Sans titre",
+    linkedVideoUrl:v.share_url||"",
+    linkedAt:new Date().toISOString(),
+    status:"published",
+    publishedAt:v.create_time ? new Date(Number(v.create_time)*1000).toISOString() : new Date().toISOString()
+  };
+  await updateMemoryEntry(decisionId,patch);
+  await syncCreatorLoop(true);
+}
+async function syncCreatorLoop(silent=false){
+  if(!latestTikTokVideos.length){
+    try{
+      const vv=await call("/api/videos");
+      latestTikTokVideos=vv.videos||[];
+    }catch(e){
+      if(!silent)alert("Impossible de charger les vidéos TikTok : "+e.message);
+      return;
+    }
+  }
+  if(!serverMemoryCache?.decisions?.length){
+    if(!silent)$("creatorSyncStatus").textContent="Aucune décision à synchroniser";
+    return;
+  }
+
+  let updates=0;
+  for(const e of serverMemoryCache.decisions){
+    if(!e.linkedVideoId)continue;
+    const v=getVideoById(e.linkedVideoId);
+    if(!v)continue;
+
+    const result={
+      views:Number(v.view_count)||0,
+      likes:Number(v.like_count)||0,
+      comments:Number(v.comment_count)||0,
+      shares:Number(v.share_count)||0
+    };
+    const stage=snapshotStage(e.publishedAt || (v.create_time ? new Date(Number(v.create_time)*1000).toISOString() : null));
+    const snapshots=Array.isArray(e.snapshots)?[...e.snapshots]:[];
+    const now=new Date().toISOString();
+    const existing=snapshots.findIndex(s=>s.stage===stage);
+    const snap={stage,at:now,...result};
+    if(existing>=0)snapshots[existing]=snap;
+    else snapshots.push(snap);
+
+    await updateMemoryEntry(e.id,{
+      status:"measured",
+      measuredAt:now,
+      result,
+      snapshots,
+      lastTikTokSync:now,
+      performanceVerdict:performanceVerdict(result)
+    }, true);
+    updates++;
+  }
+
+  await loadServerMemory();
+  $("creatorSyncStatus").innerHTML=updates
+    ? `<span class="sync-ok">✓ ${updates} vidéo${updates>1?"s":""} synchronisée${updates>1?"s":""}</span>`
+    : `<span class="sync-wait">Aucune vidéo liée à mettre à jour</span>`;
+}
+
 let serverMemoryAvailable=false;
 let serverMemoryCache=null;
 
@@ -1149,12 +1272,39 @@ function renderJournal(memory){
     list.innerHTML='<div class="muted">Les prochaines décisions structurées de Nyra apparaîtront ici automatiquement.</div>';
     return;
   }
+
   list.innerHTML=entries.map(e=>{
     const [lab,cls]=statusLabel(e.status);
     const r=e.result||{};
+    const linked=e.linkedVideoId ? getVideoById(e.linkedVideoId) : null;
     const result=e.status==="measured"
-      ? `<div class="result-line">📈 ${Number(r.views||0).toLocaleString("fr-FR")} vues · ${Number(r.likes||0)} ❤️ · ${Number(r.comments||0)} 💬 · ${Number(r.shares||0)} ↗ · ${calcEngagement(r).toFixed(1)} % engagement</div>`
+      ? `<div class="creator-kpis">
+           <div class="creator-kpi"><b>VUES</b><strong>${Number(r.views||0).toLocaleString("fr-FR")}</strong></div>
+           <div class="creator-kpi"><b>LIKES</b><strong>${Number(r.likes||0)}</strong></div>
+           <div class="creator-kpi"><b>COMMENTAIRES</b><strong>${Number(r.comments||0)}</strong></div>
+           <div class="creator-kpi"><b>PARTAGES</b><strong>${Number(r.shares||0)}</strong></div>
+         </div>
+         <div class="creator-verdict">${esc(e.performanceVerdict||performanceVerdict(r))}</div>`
       : "";
+
+    const snaps=(e.snapshots||[]).map(s=>
+      `<span class="snapshot">${esc(s.stage)} · ${Number(s.views||0).toLocaleString("fr-FR")} vues</span>`
+    ).join("");
+
+    const options=latestTikTokVideos.slice(0,25).map(v=>
+      `<option value="${esc(String(v.id))}" ${String(v.id)===String(e.linkedVideoId||"")?"selected":""}>${esc(videoLabel(v))}</option>`
+    ).join("");
+
+    const linkBlock=`
+      <div class="creator-link">
+        <b>${e.linkedVideoId?"🎯 Vidéo TikTok liée":"🔗 Associer cette idée à la vidéo publiée"}</b>
+        ${e.linkedVideoUrl?` · <a class="source-link" href="${esc(e.linkedVideoUrl)}" target="_blank" rel="noopener">ouvrir TikTok</a>`:""}
+        <select class="creator-select" onchange="if(this.value) linkDecisionToVideo('${e.id}',this.value)">
+          <option value="">${latestTikTokVideos.length?"Choisir une vidéo…":"Charge d’abord les vidéos TikTok…"}</option>
+          ${options}
+        </select>
+      </div>`;
+
     return `
       <div class="journal-item">
         <div class="journal-top">
@@ -1165,15 +1315,18 @@ function renderJournal(memory){
           <span class="status-pill ${cls}">${lab}</span>
         </div>
         ${e.why?`<div class="muted" style="margin-top:7px">${esc(e.why)}</div>`:""}
+        ${linkBlock}
         ${result}
+        ${snaps?`<div class="snapshot-row">${snaps}</div>`:""}
         <div class="journal-actions">
           ${e.status==="proposed"?`<button onclick="updateMemoryEntry('${e.id}',{status:'produced'})">✓ Produit</button>`:""}
           ${["proposed","produced"].includes(e.status)?`<button onclick="updateMemoryEntry('${e.id}',{status:'published',publishedAt:new Date().toISOString()})">📲 Publié</button>`:""}
-          ${["published","measured"].includes(e.status)?`<button onclick="recordResult('${e.id}')">📈 ${e.status==="measured"?"Modifier résultat":"Ajouter résultat"}</button>`:""}
+          ${["published","measured"].includes(e.status)?`<button onclick="recordResult('${e.id}')">✍️ ${e.status==="measured"?"Corriger manuellement":"Saisir manuellement"}</button>`:""}
         </div>
       </div>`;
   }).join("");
 }
+
 async function loadServerMemory(){
   try{
     const r=await fetch("/api/memory",{cache:"no-store"});
@@ -1192,7 +1345,7 @@ async function loadServerMemory(){
     $("memoryStatus").innerHTML='<span class="dot" style="background:#ff8d8d"></span><span>Mémoire serveur indisponible</span>';
   }
 }
-async function updateMemoryEntry(id,patch){
+async function updateMemoryEntry(id,patch,silent=false){
   try{
     const r=await fetch("/api/memory",{
       method:"POST",
@@ -1202,8 +1355,10 @@ async function updateMemoryEntry(id,patch){
     const data=await r.json();
     if(!r.ok)throw new Error(data.error||"Erreur");
     serverMemoryCache=data.memory;
-    renderLearning(data.memory);
-    renderJournal(data.memory);
+    if(!silent){
+      renderLearning(data.memory);
+      renderJournal(data.memory);
+    }
   }catch(e){alert("Impossible de mettre à jour la mémoire : "+e.message)}
 }
 async function recordResult(id){
@@ -1219,6 +1374,7 @@ async function recordResult(id){
   });
 }
 $("refreshMemory").onclick=loadServerMemory;
+$("syncCreatorLoop").onclick=()=>syncCreatorLoop(false);
 
 const BRAIN_MEMORY_KEY="nyra_brain_memory_v4";
 const BRAIN_STATE_KEY="nyra_brain_state_v4";
@@ -1405,7 +1561,9 @@ async function load(){
 
     const vv=await call("/api/videos");
     const list=vv.videos||[];
+    latestTikTokVideos=list;
     analyze(list);
+    renderJournal(serverMemoryCache||{});
 
     $("videos").innerHTML="";
     $("empty").classList.toggle("hidden",list.length>0);
@@ -1426,6 +1584,7 @@ async function load(){
 
     if(analyticsState)generateRandomIdea();
     await loadRadar();
+    await syncCreatorLoop(true);
 
   }catch(e){
     $("error").textContent=e.message;
