@@ -228,6 +228,25 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 .sync-wait{color:#ffd36b}
 @media(max-width:700px){.creator-kpis{grid-template-columns:repeat(2,1fr)}}
 
+
+.studio-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.studio-box{background:#0b0b12;border:1px solid var(--border);border-radius:14px;padding:14px}
+.studio-box h3{margin-top:0}
+.studio-field{margin-top:10px}
+.studio-field label{display:block;font-size:.72rem;color:var(--muted);font-weight:800;margin-bottom:5px}
+.studio-field textarea,.studio-field input[type="text"]{width:100%;box-sizing:border-box;background:#0e0e16;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px;font:inherit}
+.studio-field textarea{min-height:92px;resize:vertical}
+.studio-file{padding:12px;border:1px dashed var(--border);border-radius:12px;background:#101018}
+.studio-progress{height:9px;border-radius:999px;background:#171722;overflow:hidden;margin-top:10px}
+.studio-progress>div{height:100%;width:0;background:linear-gradient(90deg,#7757ff,#c784ff);transition:width .2s}
+.studio-status{margin-top:9px;font-size:.76rem;color:var(--muted);line-height:1.4}
+.studio-consent{display:flex;gap:8px;align-items:flex-start;font-size:.76rem;color:#c8c3d0;margin-top:10px}
+.studio-consent input{margin-top:2px;accent-color:#8b6cff}
+.studio-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.studio-actions button{font-size:.78rem}
+.studio-note{font-size:.72rem;color:var(--muted);line-height:1.45;margin-top:8px}
+@media(max-width:900px){.studio-grid{grid-template-columns:1fr}}
+
 @media(max-width:980px){.theme-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:880px){
   .grid{grid-template-columns:1fr}
@@ -247,7 +266,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div class="logo">N</div>
     <div>
       <h1>Nyra Control Center</h1>
-      <div class="sub">TikTok creator cockpit · V4.2 · Creator Loop</div>
+      <div class="sub">TikTok creator cockpit · V4.3 · Production Studio</div>
     </div>
   </div>
   <div class="actions">
@@ -400,7 +419,76 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
   </article>
 
 
-  <article id="memoryCard" class="card full">
+  
+  <article id="studioCard" class="card full">
+    <div class="brain-title-row">
+      <div>
+        <h2>🎬 Production Studio</h2>
+        <p class="muted">Transforme la décision de Nyra en pack de production puis envoie la vidéo terminée vers TikTok comme brouillon.</p>
+      </div>
+      <span class="tag">V4.3 · Draft Upload</span>
+    </div>
+
+    <div class="studio-grid">
+      <div class="studio-box">
+        <h3>Pack créatif</h3>
+
+        <div class="studio-field">
+          <label>CONCEPT</label>
+          <textarea id="studioConcept" placeholder="La prochaine décision de Nyra apparaîtra ici."></textarea>
+        </div>
+
+        <div class="studio-field">
+          <label>CAPTION TIKTOK</label>
+          <textarea id="studioCaption" placeholder="Caption + hashtags, modifiables avant publication."></textarea>
+        </div>
+
+        <div class="studio-field">
+          <label>PROMPT IMAGE / LOOK</label>
+          <textarea id="studioImagePrompt" placeholder="Look, décor, attitude et cadrage."></textarea>
+        </div>
+
+        <div class="studio-field">
+          <label>PROMPT VIDÉO</label>
+          <textarea id="studioVideoPrompt" placeholder="Action, caméra, rythme et twist."></textarea>
+        </div>
+
+        <div class="studio-actions">
+          <button id="copyStudioCaption" class="ghost">Copier la caption</button>
+          <button id="copyStudioImage" class="ghost">Copier prompt image</button>
+          <button id="copyStudioVideo" class="ghost">Copier prompt vidéo</button>
+        </div>
+      </div>
+
+      <div class="studio-box">
+        <h3>Envoyer à TikTok</h3>
+
+        <div class="studio-file">
+          <input id="studioVideoFile" type="file" accept="video/mp4,video/quicktime,video/webm">
+          <div id="studioFileInfo" class="studio-status">Choisis la vidéo finale depuis ton Mac.</div>
+        </div>
+
+        <label class="studio-consent">
+          <input id="studioConsent" type="checkbox">
+          <span>Je confirme vouloir envoyer cette vidéo vers mon compte TikTok. Elle sera envoyée comme <b>brouillon</b> et je terminerai moi-même l’édition/publication dans TikTok.</span>
+        </label>
+
+        <div class="studio-progress"><div id="studioProgressBar"></div></div>
+        <div id="studioUploadStatus" class="studio-status">Aucun envoi en cours.</div>
+
+        <div class="studio-actions">
+          <button id="studioUploadDraft">📤 Envoyer en brouillon TikTok</button>
+          <button id="studioCheckStatus" class="ghost" disabled>Vérifier le statut</button>
+        </div>
+
+        <div class="studio-note">
+          Le brouillon utilise le scope TikTok <b>video.upload</b> déjà autorisé. La caption préparée reste modifiable et doit être collée/validée lors de la finalisation dans TikTok.
+        </div>
+      </div>
+    </div>
+  </article>
+
+<article id="memoryCard" class="card full">
     <div class="brain-title-row">
       <div>
         <h2>📚 Journal créatif & apprentissage</h2>
@@ -1124,6 +1212,144 @@ $("refreshRadar").onclick=loadRadar;
 
 
 
+
+let studioPublishId=null;
+let lastStudioDecision=null;
+
+function setStudioFromDecision(d={}){
+  lastStudioDecision=d;
+  const concept=[d.intent,d.concept,d.hook?`Hook : ${d.hook}`:""].filter(Boolean).join("\n\n");
+  $("studioConcept").value=concept;
+  $("studioCaption").value=d.caption||"";
+  $("studioImagePrompt").value=[
+    "Nyra Sable, identité visuelle cohérente : yeux vert émeraude, cheveux brun très foncé ondulés, peau olive claire, collier lune argent.",
+    d.look?`Look : ${d.look}`:"",
+    d.decor?`Décor et lumière : ${d.decor}`:"",
+    d.camera?`Cadrage : ${d.camera}`:"",
+    "Style élégant, sophistiqué, dark feminine glamour, photoréaliste premium, vertical 9:16."
+  ].filter(Boolean).join(" ");
+  $("studioVideoPrompt").value=[
+    d.concept||"",
+    d.hook?`Commencer par : ${d.hook}`:"",
+    d.camera?`Caméra : ${d.camera}`:"",
+    d.duration?`Durée cible : ${d.duration}`:"",
+    "Mouvement naturel, cohérence parfaite du visage et de la morphologie de Nyra, rythme TikTok, final visuel mémorable."
+  ].filter(Boolean).join(" ");
+}
+async function copyStudio(id,button){
+  const value=$(id).value||"";
+  if(!value)return;
+  try{
+    await navigator.clipboard.writeText(value);
+    const old=button.textContent;
+    button.textContent="Copié ✓";
+    setTimeout(()=>button.textContent=old,1000);
+  }catch{}
+}
+$("copyStudioCaption").onclick=e=>copyStudio("studioCaption",e.currentTarget);
+$("copyStudioImage").onclick=e=>copyStudio("studioImagePrompt",e.currentTarget);
+$("copyStudioVideo").onclick=e=>copyStudio("studioVideoPrompt",e.currentTarget);
+
+$("studioVideoFile").onchange=()=>{
+  const f=$("studioVideoFile").files?.[0];
+  if(!f){
+    $("studioFileInfo").textContent="Choisis la vidéo finale depuis ton Mac.";
+    return;
+  }
+  const mb=(f.size/1024/1024).toFixed(1);
+  $("studioFileInfo").textContent=`${f.name} · ${mb} Mo · ${f.type||"type inconnu"}`;
+};
+
+async function uploadTikTokChunks(file,uploadUrl,chunkSize,totalChunks){
+  let uploaded=0;
+  for(let i=0;i<totalChunks;i++){
+    const start=i*chunkSize;
+    const end=(i===totalChunks-1)?file.size:Math.min(start+chunkSize,file.size);
+    const chunk=file.slice(start,end);
+    const r=await fetch(uploadUrl,{
+      method:"PUT",
+      headers:{
+        "Content-Type":file.type||"video/mp4",
+        "Content-Length":String(chunk.size),
+        "Content-Range":`bytes ${start}-${end-1}/${file.size}`
+      },
+      body:chunk
+    });
+    if(![200,201,206].includes(r.status)){
+      let t="";
+      try{t=await r.text()}catch{}
+      throw new Error(`TikTok upload HTTP ${r.status}${t?` · ${t.slice(0,180)}`:""}`);
+    }
+    uploaded=end;
+    const pct=Math.round(uploaded/file.size*100);
+    $("studioProgressBar").style.width=pct+"%";
+    $("studioUploadStatus").textContent=`Envoi TikTok : ${pct} %`;
+  }
+}
+
+$("studioUploadDraft").onclick=async()=>{
+  const file=$("studioVideoFile").files?.[0];
+  if(!file)return alert("Choisis d’abord la vidéo finale.");
+  if(!$("studioConsent").checked)return alert("Confirme l’envoi vers TikTok avant de continuer.");
+
+  const btn=$("studioUploadDraft");
+  btn.disabled=true;
+  $("studioProgressBar").style.width="0%";
+  $("studioUploadStatus").textContent="Initialisation du brouillon TikTok…";
+
+  try{
+    const r=await fetch("/api/tiktok-upload-init",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({size:file.size,type:file.type,name:file.name})
+    });
+    const data=await r.json();
+    if(!r.ok)throw new Error(data.error||"Initialisation TikTok impossible");
+
+    studioPublishId=data.publish_id;
+    localStorage.setItem("nyra_last_publish_id",studioPublishId);
+    await uploadTikTokChunks(file,data.upload_url,data.chunk_size,data.total_chunk_count);
+
+    $("studioUploadStatus").innerHTML="✓ Vidéo envoyée. TikTok va maintenant préparer le brouillon et envoyer une notification dans l’application.";
+    $("studioCheckStatus").disabled=false;
+    setTimeout(()=>checkStudioStatus(),2500);
+  }catch(e){
+    $("studioUploadStatus").textContent="Erreur : "+e.message;
+  }finally{
+    btn.disabled=false;
+  }
+};
+
+async function checkStudioStatus(){
+  studioPublishId=studioPublishId||localStorage.getItem("nyra_last_publish_id");
+  if(!studioPublishId)return;
+  $("studioUploadStatus").textContent="Vérification du statut TikTok…";
+  try{
+    const r=await fetch("/api/tiktok-upload-status",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({publish_id:studioPublishId})
+    });
+    const data=await r.json();
+    if(!r.ok)throw new Error(data.error||"Statut indisponible");
+    const s=data.status||"INCONNU";
+    const labels={
+      PROCESSING_UPLOAD:"TikTok traite encore l’envoi.",
+      SEND_TO_USER_INBOX:"✓ Brouillon prêt : ouvre la notification TikTok pour terminer la publication.",
+      PUBLISH_COMPLETE:"✓ Publication terminée dans TikTok.",
+      FAILED:`Échec TikTok${data.fail_reason?` : ${data.fail_reason}`:""}.`
+    };
+    $("studioUploadStatus").textContent=labels[s]||`Statut TikTok : ${s}`;
+  }catch(e){
+    $("studioUploadStatus").textContent="Erreur statut : "+e.message;
+  }
+}
+$("studioCheckStatus").onclick=checkStudioStatus;
+if(localStorage.getItem("nyra_last_publish_id")){
+  studioPublishId=localStorage.getItem("nyra_last_publish_id");
+  $("studioCheckStatus").disabled=false;
+}
+
 let latestTikTokVideos=[];
 
 function videoLabel(v){
@@ -1496,6 +1722,7 @@ async function askNyraBrain(message,mode="chat"){
     addBrainMessage("nyra",data.reply||"Je n’ai rien formulé.");
     if(data.state)saveBrainState(data.state);
     renderBrainDecision(data);
+    if(data.decision) setStudioFromDecision(data.decision);
     loadServerMemory();
   }catch(e){
     thinking.remove();
