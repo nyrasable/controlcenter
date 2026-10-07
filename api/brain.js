@@ -1,3 +1,4 @@
+const {loadMemory,appendDecision,appendInteraction,saveState}=require("../lib/nyra-memory");
 const OPENAI_URL = "https://api.openai.com/v1/responses";
 
 function clamp(n, fallback=50){
@@ -54,6 +55,8 @@ module.exports = async function handler(req,res){
   });
 
   const {message,mode="chat",web=true,context={}}=req.body||{};
+  let persistent={available:false,memory:null};
+  try{ persistent=await loadMemory(); }catch{}
   if(!message || typeof message!=="string"){
     return res.status(400).json({error:"Message manquant."});
   }
@@ -94,6 +97,16 @@ ${JSON.stringify(state,null,2)}
 CONVERSATION RÉCENTE
 ${JSON.stringify((context.recentConversation||[]).slice(-10),null,2)}
 
+MÉMOIRE LONGUE DURÉE ET APPRENTISSAGE RÉEL
+${JSON.stringify(persistent.memory ? {
+  learning:persistent.memory.learning,
+  recentDecisions:(persistent.memory.decisions||[]).slice(-12),
+  creativeState:persistent.memory.creativeState
+} : context.persistentMemory || null,null,2)}
+
+RÈGLE D'APPRENTISSAGE
+Quand des résultats réels sont présents, utilise-les comme retour d'expérience. Ne généralise pas à partir d'un seul contenu. À partir de 3 résultats mesurés dans un même univers, tu peux commencer à considérer un signal plus robuste.
+
 MODE: ${mode}
 
 Réponds STRICTEMENT avec un objet JSON valide, sans markdown ni texte autour :
@@ -106,6 +119,7 @@ Réponds STRICTEMENT avec un objet JSON valide, sans markdown ni texte autour :
     "saturation": 0-100
   },
   "decision": {
+    "theme": "univers principal parmi AI Girl / Digital, Moon & Fantasy, Fashion, Sport, Mini-drama / SF, Glamour, Food, Lifestyle, Nature / Zen, Dark aesthetic, Autres",
     "intent": "direction créative choisie en une phrase",
     "why": "raison courte fondée sur données + tendances éventuelles",
     "concept": "concept concret",
@@ -169,14 +183,44 @@ Ne fabrique pas de métriques web précises si tu ne les as pas trouvées.
     }
 
     const nextState=parsed.state||{};
+    const normalizedState={
+      boldness:clamp(nextState.boldness,state.boldness??74),
+      curiosity:clamp(nextState.curiosity,state.curiosity??82),
+      energy:clamp(nextState.energy,state.energy??78),
+      saturation:clamp(nextState.saturation,state.saturation??36)
+    };
+
+    try{
+      if(persistent.available){
+        await saveState(normalizedState);
+        await appendInteraction({
+          mode,
+          user:message.slice(0,1200),
+          reply:String(parsed.reply||"").slice(0,2000)
+        });
+        if(parsed.decision?.concept){
+          await appendDecision({
+            theme:String(parsed.decision.theme||"Autres"),
+            concept:String(parsed.decision.concept||""),
+            why:String(parsed.decision.why||""),
+            hook:String(parsed.decision.hook||""),
+            look:String(parsed.decision.look||""),
+            decor:String(parsed.decision.decor||""),
+            camera:String(parsed.decision.camera||""),
+            duration:String(parsed.decision.duration||""),
+            caption:String(parsed.decision.caption||""),
+            intent:String(parsed.decision.intent||""),
+            status:"proposed"
+          });
+        }
+      }
+    }catch(e){
+      console.error("NYRA_MEMORY_SAVE",e.message||e);
+    }
+
     return res.status(200).json({
       reply:String(parsed.reply||""),
-      state:{
-        boldness:clamp(nextState.boldness,state.boldness??74),
-        curiosity:clamp(nextState.curiosity,state.curiosity??82),
-        energy:clamp(nextState.energy,state.energy??78),
-        saturation:clamp(nextState.saturation,state.saturation??36)
-      },
+      state:normalizedState,
       decision:parsed.decision||{},
       sources:collectSources(response)
     });
