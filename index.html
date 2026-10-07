@@ -188,6 +188,29 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 .web-toggle input{accent-color:#8b6cff}
 @media(max-width:900px){.brain-shell{grid-template-columns:1fr}.brain-state{grid-template-columns:repeat(2,1fr)}}
 
+
+.memory-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:14px}
+.memory-status{display:flex;gap:8px;align-items:center;font-size:.78rem;color:var(--muted)}
+.memory-status .dot{width:8px;height:8px;border-radius:50%;background:#6ff0aa}
+.learning-box{background:#0b0b12;border:1px solid var(--border);border-radius:14px;padding:14px}
+.learning-box h3{margin-top:0}
+.learning-list{display:grid;gap:8px}
+.learning-item{padding:10px;border-radius:11px;background:#11111a;border:1px solid var(--border);font-size:.82rem}
+.journal-list{display:grid;gap:10px;max-height:560px;overflow:auto;padding-right:4px}
+.journal-item{padding:13px;border-radius:14px;background:#0b0b12;border:1px solid var(--border)}
+.journal-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.journal-title{font-weight:900}
+.journal-meta{font-size:.72rem;color:var(--muted);margin-top:4px}
+.journal-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.journal-actions button{font-size:.72rem;padding:7px 9px}
+.status-pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:.68rem;font-weight:900;border:1px solid var(--border)}
+.status-proposed{color:#cfc5ff;background:#181426}
+.status-produced{color:#8fd6ff;background:#10202a}
+.status-published{color:#ffd36b;background:#241f10}
+.status-measured{color:#6ff0aa;background:#10221a}
+.result-line{margin-top:8px;font-size:.75rem;color:#c7c3cf}
+@media(max-width:900px){.memory-grid{grid-template-columns:1fr}}
+
 @media(max-width:980px){.theme-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:880px){
   .grid{grid-template-columns:1fr}
@@ -207,7 +230,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div class="logo">N</div>
     <div>
       <h1>Nyra Control Center</h1>
-      <div class="sub">TikTok creator cockpit · V4 · Nyra Brain</div>
+      <div class="sub">TikTok creator cockpit · V4.1 · Memory & Learning</div>
     </div>
   </div>
   <div class="actions">
@@ -355,6 +378,35 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
           <h4>Sources web consultées</h4>
           <div id="brainSources" class="brain-sources"></div>
         </div>
+      </div>
+    </div>
+  </article>
+
+
+  <article id="memoryCard" class="card full">
+    <div class="brain-title-row">
+      <div>
+        <h2>📚 Journal créatif & apprentissage</h2>
+        <div id="memoryStatus" class="memory-status"><span class="dot"></span><span>Chargement de la mémoire…</span></div>
+        <p class="muted">Chaque décision de Nyra peut être suivie jusqu’au résultat réel. Le Brain réutilise ensuite cet historique pour ses prochains choix.</p>
+      </div>
+      <button id="refreshMemory" class="ghost">Actualiser</button>
+    </div>
+
+    <div class="memory-grid">
+      <div class="learning-box">
+        <h3>🧠 Ce que Nyra apprend</h3>
+        <div id="learningSummary" class="learning-list">
+          <div class="muted">Pas encore assez de résultats enregistrés.</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="brain-title-row">
+          <h3 style="margin:0 0 10px">Historique des décisions</h3>
+          <span id="memoryCount" class="tag">0 décision</span>
+        </div>
+        <div id="journalList" class="journal-list"></div>
       </div>
     </div>
   </article>
@@ -1045,6 +1097,129 @@ async function loadRadar(){
 $("refreshRadar").onclick=loadRadar;
 
 
+
+let serverMemoryAvailable=false;
+let serverMemoryCache=null;
+
+function fmtDate(iso){
+  try{return new Date(iso).toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
+  catch{return ""}
+}
+function statusLabel(s){
+  const map={
+    proposed:["Proposé","status-proposed"],
+    produced:["Produit","status-produced"],
+    published:["Publié","status-published"],
+    measured:["Résultat","status-measured"]
+  };
+  return map[s]||map.proposed;
+}
+function calcEngagement(r){
+  const views=Number(r?.views||0);
+  if(!views)return 0;
+  return ((Number(r.likes||0)+Number(r.comments||0)+Number(r.shares||0))/views)*100;
+}
+function renderLearning(memory){
+  const box=$("learningSummary");
+  const learning=memory?.learning||{};
+  const themes=Object.entries(learning.byTheme||{})
+    .map(([name,v])=>({name,...v}))
+    .sort((a,b)=>(b.avgViews||0)-(a.avgViews||0));
+
+  const rows=[];
+  if(themes.length){
+    const best=themes[0];
+    rows.push(`<div class="learning-item"><b>🏆 Meilleure moyenne mesurée</b><br>${esc(best.name)} · ${Math.round(best.avgViews||0)} vues moyennes · ${best.measured||0} test(s)</div>`);
+    const aff=[...themes].sort((a,b)=>(b.avgEngagement||0)-(a.avgEngagement||0))[0];
+    if(aff)rows.push(`<div class="learning-item"><b>💜 Meilleure affinité mesurée</b><br>${esc(aff.name)} · ${(aff.avgEngagement||0).toFixed(1)} % d’engagement</div>`);
+  }
+  if(learning.totalMeasured){
+    rows.push(`<div class="learning-item"><b>📊 Base d’apprentissage</b><br>${learning.totalMeasured} contenu(s) avec résultats réels.</div>`);
+  }
+  if(memory?.creativeState){
+    rows.push(`<div class="learning-item"><b>🧠 État persistant</b><br>Audace ${memory.creativeState.boldness ?? "—"} · Curiosité ${memory.creativeState.curiosity ?? "—"} · Énergie ${memory.creativeState.energy ?? "—"} · Saturation ${memory.creativeState.saturation ?? "—"}</div>`);
+  }
+  box.innerHTML=rows.length?rows.join(""):'<div class="muted">Pas encore assez de résultats enregistrés. Publie un concept puis renseigne ses performances.</div>';
+}
+function renderJournal(memory){
+  const list=$("journalList");
+  const entries=(memory?.decisions||[]).slice().reverse();
+  $("memoryCount").textContent=`${entries.length} décision${entries.length>1?"s":""}`;
+  if(!entries.length){
+    list.innerHTML='<div class="muted">Les prochaines décisions structurées de Nyra apparaîtront ici automatiquement.</div>';
+    return;
+  }
+  list.innerHTML=entries.map(e=>{
+    const [lab,cls]=statusLabel(e.status);
+    const r=e.result||{};
+    const result=e.status==="measured"
+      ? `<div class="result-line">📈 ${Number(r.views||0).toLocaleString("fr-FR")} vues · ${Number(r.likes||0)} ❤️ · ${Number(r.comments||0)} 💬 · ${Number(r.shares||0)} ↗ · ${calcEngagement(r).toFixed(1)} % engagement</div>`
+      : "";
+    return `
+      <div class="journal-item">
+        <div class="journal-top">
+          <div>
+            <div class="journal-title">${esc(e.concept||"Décision créative")}</div>
+            <div class="journal-meta">${esc(e.theme||"Univers non précisé")} · ${fmtDate(e.createdAt)}</div>
+          </div>
+          <span class="status-pill ${cls}">${lab}</span>
+        </div>
+        ${e.why?`<div class="muted" style="margin-top:7px">${esc(e.why)}</div>`:""}
+        ${result}
+        <div class="journal-actions">
+          ${e.status==="proposed"?`<button onclick="updateMemoryEntry('${e.id}',{status:'produced'})">✓ Produit</button>`:""}
+          ${["proposed","produced"].includes(e.status)?`<button onclick="updateMemoryEntry('${e.id}',{status:'published',publishedAt:new Date().toISOString()})">📲 Publié</button>`:""}
+          ${["published","measured"].includes(e.status)?`<button onclick="recordResult('${e.id}')">📈 ${e.status==="measured"?"Modifier résultat":"Ajouter résultat"}</button>`:""}
+        </div>
+      </div>`;
+  }).join("");
+}
+async function loadServerMemory(){
+  try{
+    const r=await fetch("/api/memory",{cache:"no-store"});
+    const data=await r.json();
+    if(!r.ok)throw new Error(data.error||"Mémoire indisponible");
+    serverMemoryAvailable=!!data.available;
+    serverMemoryCache=data.memory||null;
+    $("memoryStatus").innerHTML=serverMemoryAvailable
+      ? '<span class="dot"></span><span>Mémoire serveur active</span>'
+      : '<span class="dot" style="background:#ffd36b"></span><span>Mode local — stockage serveur non configuré</span>';
+    renderLearning(serverMemoryCache||{});
+    renderJournal(serverMemoryCache||{});
+    if(serverMemoryCache?.creativeState)renderBrainState(serverMemoryCache.creativeState);
+  }catch(e){
+    serverMemoryAvailable=false;
+    $("memoryStatus").innerHTML='<span class="dot" style="background:#ff8d8d"></span><span>Mémoire serveur indisponible</span>';
+  }
+}
+async function updateMemoryEntry(id,patch){
+  try{
+    const r=await fetch("/api/memory",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"update_entry",id,patch})
+    });
+    const data=await r.json();
+    if(!r.ok)throw new Error(data.error||"Erreur");
+    serverMemoryCache=data.memory;
+    renderLearning(data.memory);
+    renderJournal(data.memory);
+  }catch(e){alert("Impossible de mettre à jour la mémoire : "+e.message)}
+}
+async function recordResult(id){
+  const views=prompt("Nombre de vues ?");
+  if(views===null)return;
+  const likes=prompt("Nombre de likes ?","0"); if(likes===null)return;
+  const comments=prompt("Nombre de commentaires ?","0"); if(comments===null)return;
+  const shares=prompt("Nombre de partages ?","0"); if(shares===null)return;
+  await updateMemoryEntry(id,{
+    status:"measured",
+    measuredAt:new Date().toISOString(),
+    result:{views:Number(views)||0,likes:Number(likes)||0,comments:Number(comments)||0,shares:Number(shares)||0}
+  });
+}
+$("refreshMemory").onclick=loadServerMemory;
+
 const BRAIN_MEMORY_KEY="nyra_brain_memory_v4";
 const BRAIN_STATE_KEY="nyra_brain_state_v4";
 let brainBusy=false;
@@ -1109,8 +1284,12 @@ function brainContext(){
       bestAffinityTheme:analyticsState?.bestAffinityTheme ?? null,
       themes,reliableThemes:reliable
     },
-    creativeState:loadBrainState(),
-    recentConversation:loadBrainMemory().slice(-10)
+    creativeState:serverMemoryCache?.creativeState || loadBrainState(),
+    recentConversation:loadBrainMemory().slice(-10),
+    persistentMemory:serverMemoryCache ? {
+      learning:serverMemoryCache.learning || {},
+      recentDecisions:(serverMemoryCache.decisions||[]).slice(-12)
+    } : null
   };
 }
 function renderBrainDecision(data){
@@ -1161,6 +1340,7 @@ async function askNyraBrain(message,mode="chat"){
     addBrainMessage("nyra",data.reply||"Je n’ai rien formulé.");
     if(data.state)saveBrainState(data.state);
     renderBrainDecision(data);
+    loadServerMemory();
   }catch(e){
     thinking.remove();
     addBrainMessage("nyra","Je n’arrive pas à accéder à mon cerveau pour le moment : "+e.message,false);
@@ -1198,6 +1378,7 @@ $("clearBrainMemory").onclick=()=>{
 };
 renderBrainState(loadBrainState());
 restoreBrainChat();
+loadServerMemory();
 
 
 async function load(){
