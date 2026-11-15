@@ -256,6 +256,21 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
   .analysis-grid{grid-template-columns:1fr}
 }
 @media(max-width:620px){.theme-grid,.idea-grid{grid-template-columns:1fr}}
+
+/* Social Bot V1 — manual comment drafting */
+.social-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.social-panel{background:#0b0b12;border:1px solid var(--border);border-radius:15px;padding:16px}
+.social-panel h3{margin:0 0 9px}
+.social-field{display:block;width:100%;min-height:150px;resize:vertical;background:#0e0e16;color:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;font:inherit;line-height:1.5}
+.social-field:focus{outline:2px solid var(--v);outline-offset:2px}
+.social-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.social-actions button:disabled{opacity:.5;cursor:not-allowed}
+.social-status{min-height:22px;font-size:.82rem;color:var(--muted);margin-top:12px;white-space:pre-wrap}
+.social-status.is-error{color:var(--bad)}
+.social-status.is-success{color:var(--good)}
+.social-count{font-size:.75rem;color:var(--muted);text-align:right;margin-top:5px}
+.social-flag{font-size:.78rem;margin-top:10px;color:var(--warn)}
+@media(max-width:850px){.social-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -420,6 +435,41 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 
 
   
+
+  <article id="socialBotCard" class="card full">
+    <div class="brain-title-row">
+      <div>
+        <h2>💬 Nyra Social Bot</h2>
+        <p class="muted">Colle un commentaire TikTok et demande à Nyra Brain de préparer une réponse fidèle à sa personnalité.</p>
+      </div>
+      <span class="badge signal">V1 · Réponses manuelles uniquement</span>
+    </div>
+    <div class="social-grid">
+      <div class="social-panel">
+        <h3>Commentaire reçu</h3>
+        <label for="socialComment" class="muted">Texte du commentaire (1 à 1 200 caractères)</label>
+        <textarea id="socialComment" class="social-field" maxlength="1200" placeholder="Colle ici le commentaire d’un abonné…"></textarea>
+        <div class="social-count"><span id="socialCommentCount">0</span> / 1 200</div>
+        <div class="social-actions">
+          <button id="socialGenerate" class="primary">✨ Demander une réponse à Nyra</button>
+          <button id="socialClear" type="button">Effacer</button>
+        </div>
+      </div>
+      <div class="social-panel">
+        <h3>Réponse proposée par Nyra</h3>
+        <label for="socialDraft" class="muted">Brouillon modifiable avant copie</label>
+        <textarea id="socialDraft" class="social-field" maxlength="280" placeholder="La réponse de Nyra apparaîtra ici…"></textarea>
+        <div class="social-count"><span id="socialDraftCount">0</span> / 280</div>
+        <div id="socialReview" class="social-flag hidden" role="alert"></div>
+        <div class="social-actions">
+          <button id="socialCopy" type="button" disabled>📋 Copier la réponse</button>
+        </div>
+      </div>
+    </div>
+    <div id="socialStatus" class="social-status" role="status" aria-live="polite">Connecte ton compte TikTok pour utiliser le Social Bot. Aucun commentaire n’est récupéré ni publié automatiquement.</div>
+    <p class="note">La publication reste manuelle dans TikTok. Pour le moment, les commentaires doivent être collés ici ; les textes ne sont pas conservés dans le navigateur par cette interface.</p>
+  </article>
+
   <article id="studioCard" class="card full">
     <div class="brain-title-row">
       <div>
@@ -1763,6 +1813,78 @@ renderBrainState(loadBrainState());
 restoreBrainChat();
 loadServerMemory();
 
+
+
+// Social Bot V1: interface de brouillons, sans publication automatique TikTok.
+let socialBusy=false;
+function socialStatus(message,kind=""){
+  const el=$("socialStatus");
+  el.textContent=message;
+  el.className="social-status"+(kind?" is-"+kind:"");
+}
+function updateSocialCounts(){
+  $("socialCommentCount").textContent=String($("socialComment").value.length);
+  $("socialDraftCount").textContent=String($("socialDraft").value.length);
+  $("socialCopy").disabled=!$("socialDraft").value.trim();
+}
+$("socialComment").addEventListener("input",updateSocialCounts);
+$("socialDraft").addEventListener("input",updateSocialCounts);
+$("socialClear").addEventListener("click",()=>{
+  $("socialComment").value="";
+  $("socialDraft").value="";
+  $("socialReview").classList.add("hidden");
+  $("socialReview").textContent="";
+  updateSocialCounts();
+  socialStatus("Champs effacés. Aucun commentaire n’a été publié.");
+});
+$("socialGenerate").addEventListener("click",async()=>{
+  if(socialBusy)return;
+  const comment=$("socialComment").value.trim();
+  if(!comment || comment.length>1200){
+    socialStatus("Saisis un commentaire de 1 à 1 200 caractères.","error");
+    return;
+  }
+  socialBusy=true;
+  $("socialGenerate").disabled=true;
+  $("socialGenerate").textContent="Nyra réfléchit…";
+  $("socialDraft").value="";
+  $("socialReview").classList.add("hidden");
+  updateSocialCounts();
+  socialStatus("Génération du brouillon avec Nyra Brain…");
+  try{
+    const data=await call("/api/social-bot",{
+      method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({comment})
+    });
+    $("socialDraft").value=String(data.draft||"").slice(0,280);
+    updateSocialCounts();
+    if(data.status==="human_review"){
+      $("socialReview").textContent="⚠️ Commentaire sensible : vérifier personnellement la réponse avant tout usage.";
+      $("socialReview").classList.remove("hidden");
+    }
+    socialStatus(data.draft?"Brouillon prêt. Tu peux le modifier, puis le copier pour répondre dans TikTok.":"Aucune réponse générée.",data.draft?"success":"error");
+  }catch(e){
+    const msg=/Authentication required|401|authenticated/i.test(e.message)
+      ? "Session absente : connecte-toi à TikTok puis réessaie."
+      : "Impossible de générer la réponse : "+e.message;
+    socialStatus(msg,"error");
+  }finally{
+    socialBusy=false;
+    $("socialGenerate").disabled=false;
+    $("socialGenerate").textContent="✨ Demander une réponse à Nyra";
+  }
+});
+$("socialCopy").addEventListener("click",async()=>{
+  const draft=$("socialDraft").value.trim();
+  if(!draft)return;
+  try{
+    await navigator.clipboard.writeText(draft);
+    socialStatus("Réponse copiée. Colle-la manuellement dans TikTok : rien n’a été publié.","success");
+  }catch(e){
+    $("socialDraft").focus();$("socialDraft").select();
+    socialStatus("Copie automatique indisponible. Le texte est sélectionné : utilise ⌘C sur ton Mac.","error");
+  }
+});
+updateSocialCounts();
 
 async function load(){
   $("error").textContent="";
