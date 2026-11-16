@@ -271,6 +271,31 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
 .social-count{font-size:.75rem;color:var(--muted);text-align:right;margin-top:5px}
 .social-flag{font-size:.78rem;margin-top:10px;color:var(--warn)}
 @media(max-width:850px){.social-grid{grid-template-columns:1fr}}
+
+/* Nyra Lab V4.5 */
+.lab-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.lab-box{background:#0b0b12;border:1px solid var(--border);padding:15px;border-radius:16px;min-width:0}
+.lab-box h3{margin:0 0 10px}
+.lab-box label{display:block;font-size:.78rem;color:#ccc;margin:12px 0 5px}
+.lab-box input[type=file],.lab-box input[type=text],.lab-box textarea,.lab-box select{width:100%;padding:10px;background:#12121b;border:1px solid var(--border);border-radius:10px;color:white;font:inherit}
+.lab-box textarea{min-height:76px;resize:vertical}
+.lab-box select option{background:#171725}
+.lab-box video{width:100%;max-height:300px;background:#07070a;border-radius:12px;display:block;margin-top:10px}
+.lab-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.lab-info{font-size:.78rem;color:var(--muted);line-height:1.5;margin:10px 0}
+.lab-scores{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
+.lab-score-item{background:#12121b;padding:10px;border-radius:10px;border:1px solid var(--border)}
+.lab-score-item b{display:block;font-size:.75rem;color:#bbb}
+.lab-score-item strong{font-size:1.12rem}
+.lab-score-total{font-size:2rem;font-weight:900;color:#7ee7ff}
+.lab-output{white-space:pre-wrap;line-height:1.5;font-size:.89rem}
+.lab-history{display:grid;gap:10px;margin-top:12px}
+.lab-record{border:1px solid var(--border);border-radius:12px;padding:12px;background:#101019}
+.lab-record-header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.lab-record .lab-buttons button{padding:7px 10px;font-size:.76rem}
+.lab-record select{max-width:390px}
+@media(max-width:900px){.lab-layout{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -281,7 +306,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div class="logo">N</div>
     <div>
       <h1>Nyra Control Center</h1>
-      <div class="sub">TikTok creator cockpit · V4.4 · Production Studio</div>
+      <div class="sub">TikTok creator cockpit · V4.5 · Nyra Lab</div>
     </div>
   </div>
   <div class="actions">
@@ -469,6 +494,45 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div id="socialStatus" class="social-status" role="status" aria-live="polite">Connecte ton compte TikTok pour utiliser le Social Bot. Aucun commentaire n’est récupéré ni publié automatiquement.</div>
     <p class="note">La publication reste manuelle dans TikTok. Pour le moment, les commentaires doivent être collés ici ; les textes ne sont pas conservés dans le navigateur par cette interface.</p>
   </article>
+
+
+<!-- NYRA LAB V4.5 : evaluation prepublication et boucle d'apprentissage -->
+<article id="labCard" class="card full">
+  <div class="brain-title-row">
+    <div>
+      <h2>🧪 Nyra Lab · Testeur de vidéos</h2>
+      <p class="muted">Analyse des images clés avant publication, conseils Grok et suivi des performances TikTok après publication.</p>
+    </div>
+    <span class="badge">V4.5 · Laboratoire B</span>
+  </div>
+  <div class="lab-layout">
+    <div class="lab-box">
+      <h3>1 · Préparer le test</h3>
+      <label for="labVideo">Vidéo terminée (traitée localement dans ton navigateur)</label>
+      <input id="labVideo" type="file" accept="video/mp4,video/webm,video/quicktime,video/*">
+      <video id="labPreview" controls playsinline preload="metadata" class="hidden"></video>
+      <label for="labTitle">Titre du concept</label>
+      <input id="labTitle" type="text" maxlength="160" placeholder="Ex. Nyra et la vague géante">
+      <label for="labCaption">Description TikTok envisagée</label>
+      <textarea id="labCaption" maxlength="500" placeholder="Caption prévue, emojis, hashtags…"></textarea>
+      <label for="labTranscript">Dialogue / son / musique / texte à l'écran (facultatif)</label>
+      <textarea id="labTranscript" maxlength="2500" placeholder="Ex. À 1s Nyra dit… / beat musical à 4s…"></textarea>
+      <div class="lab-info">Nyra analyse jusqu'à 8 captures extraites du fichier vidéo. Elle ne peut pas écouter directement l'audio dans cette version : décris-le ci-dessus. L'analyse est une estimation créative, pas une prédiction officielle de l'algorithme TikTok.</div>
+      <div class="lab-buttons"><button id="labAnalyze" class="primary">🧠 Faire tester la vidéo par Nyra</button><button id="labReload" type="button">Actualiser l'historique</button></div>
+      <div id="labStatus" class="lab-info" role="status">Choisis un fichier pour commencer.</div>
+    </div>
+    <div class="lab-box">
+      <h3>2 · Verdict de Nyra Brain</h3>
+      <div id="labResult" class="lab-info">Aucune analyse pour le moment.</div>
+      <div id="labPromptWrap" class="hidden"><h3>🎬 Correction prête pour Grok</h3><div id="labPrompt" class="lab-output"></div><div class="lab-buttons"><button id="labCopyPrompt">Copier le prompt correctif</button></div></div>
+    </div>
+  </div>
+  <div class="lab-box" style="margin-top:14px">
+    <div class="brain-title-row"><div><h3>3 · Suivi après publication</h3><p class="muted" style="margin:0">Lier un test à une vidéo TikTok et enregistrer des métriques réelles pour comparer le verdict aux résultats.</p></div><span id="labCount" class="badge">0 test</span></div>
+    <div id="labHistory" class="lab-history"><p class="muted">Chargement…</p></div>
+    <div class="lab-info">Les vues et interactions sont des instantanés à la date de synchronisation, pas des statistiques de rétention ni une prédiction de viralité. La connexion TikTok Business pour les commentaires est un autre chantier.</div>
+  </div>
+</article>
 
   <article id="studioCard" class="card full">
     <div class="brain-title-row">
@@ -1953,6 +2017,7 @@ async function load(){
     const vv=await call("/api/videos");
     const list=vv.videos||[];
     latestTikTokVideos=list;
+    if(typeof renderLabHistory==='function')renderLabHistory();
     tikTokVideosRetrievedAt=new Date().toISOString();
     analyze(list);
     renderJournal(serverMemoryCache||{});
@@ -1990,6 +2055,151 @@ $("logout").onclick=async()=>{
 };
 
 load();
+
+// ==================== NYRA LAB V4.5 ====================
+let labRecords=[],labCurrent=null,labFileUrl=null,labWorking=false;
+const labScoreLabels={hook:'Hook 0–2 s',retention:'Rythme / rétention potentielle',reactions:'Réactions et partages',identity:'Identité Nyra',history:'Comparaison historique'};
+const labMax={hook:25,retention:25,reactions:20,identity:15,history:15};
+function labStatus(t){$('labStatus').textContent=t}
+$('labVideo').addEventListener('change',()=>{
+  const f=$('labVideo').files?.[0];
+  if(labFileUrl)URL.revokeObjectURL(labFileUrl);
+  labFileUrl=null;
+  if(!f){$('labPreview').classList.add('hidden');return}
+  if(!f.type.startsWith('video/')){labStatus('Sélectionne un fichier vidéo compatible.');return}
+  labFileUrl=URL.createObjectURL(f);
+  $('labPreview').src=labFileUrl;
+  $('labPreview').classList.remove('hidden');
+  if(!$('labTitle').value)$('labTitle').value=f.name.replace(/\.[^.]+$/,'').slice(0,160);
+  labStatus('Fichier sélectionné : '+f.name+' (aucun envoi du MP4 au serveur).');
+});
+function labEvent(target,event,timeoutMs=10000){
+  return new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>{cleanup();reject(new Error('Décodage vidéo trop lent ou format non pris en charge'))},timeoutMs);
+    function cleanup(){clearTimeout(timer);target.removeEventListener(event,success);target.removeEventListener('error',failure)}
+    function success(){cleanup();resolve()}
+    function failure(){cleanup();reject(new Error('Impossible de lire cette vidéo'))}
+    target.addEventListener(event,success,{once:true});target.addEventListener('error',failure,{once:true});
+  });
+}
+async function labCaptureFrames(file){
+  const tmp=URL.createObjectURL(file);
+  const video=document.createElement('video');video.preload='auto';video.muted=true;video.playsInline=true;
+  try{
+    video.src=tmp;
+    await labEvent(video,'loadedmetadata',15000);
+    const duration=video.duration;
+    if(!Number.isFinite(duration)||duration<=0||duration>600)throw new Error('Vidéo invalide ou supérieure à 10 minutes.');
+    const count=Math.min(8,Math.max(3,Math.ceil(duration/3)));
+    const frames=[];
+    const canvas=document.createElement('canvas');
+    const ratio=Math.min(1,360/Math.max(1,video.videoWidth));
+    canvas.width=Math.max(1,Math.round(video.videoWidth*ratio));
+    canvas.height=Math.max(1,Math.round(video.videoHeight*ratio));
+    const ctx=canvas.getContext('2d');
+    if(!ctx)throw new Error('Canvas indisponible');
+    for(let i=0;i<count;i++){
+      const time=Math.max(0,Math.min(duration-0.06,duration*(i+.12)/(count+.25)));
+      const seekPromise=labEvent(video,'seeked',12000);
+      video.currentTime=time;
+      await seekPromise;
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      let data=canvas.toDataURL('image/jpeg',.58);
+      // Préserver la limite API : descendre la résolution si besoin.
+      if(data.length>210000){
+        canvas.width=Math.max(1,Math.round(canvas.width*.7));canvas.height=Math.max(1,Math.round(canvas.height*.7));
+        ctx.drawImage(video,0,0,canvas.width,canvas.height);data=canvas.toDataURL('image/jpeg',.43);
+      }
+      if(data.length>210000)throw new Error('Image trop volumineuse pour le test');
+      frames.push(data);
+      labStatus('Extraction des images clés : '+(i+1)+'/'+count);
+    }
+    return {duration,frames};
+  }finally{video.removeAttribute('src');video.load();URL.revokeObjectURL(tmp)}
+}
+function labReport(item){
+  labCurrent=item;
+  const a=item.analysis||{};
+  const scores=a.scores||{};
+  $('labResult').innerHTML=`
+    <div class="lab-score-total">${Number(a.score)||0}<small style="font-size:.9rem;color:#aaa"> /100</small></div>
+    <div class="lab-info">Score heuristique de préparation · confiance : ${esc(a.confidence||'low')}</div>
+    <div class="lab-scores">${Object.keys(labScoreLabels).map(k=>`<div class="lab-score-item"><b>${esc(labScoreLabels[k])}</b><strong>${Number(scores[k])||0} / ${labMax[k]}</strong></div>`).join('')}</div>
+    <h3>Verdict</h3><div class="lab-output">${esc(a.verdict||'—')}</div>
+    <h3 style="margin-top:15px">Points forts</h3><div class="lab-output">${esc((a.strengths||[]).map(x=>'• '+x).join('\n')||'—')}</div>
+    <h3 style="margin-top:15px">À améliorer</h3><div class="lab-output">${esc((a.weaknesses||[]).map(x=>'• '+x).join('\n')||'—')}</div>
+    <h3 style="margin-top:15px">Actions conseillées</h3><div class="lab-output">${esc((a.improvements||[]).map((x,i)=>(i+1)+'. '+x).join('\n')||'—')}</div>
+    <h3 style="margin-top:15px">Hook alternatif</h3><div class="lab-output">${esc(a.hookSuggestion||'—')}</div>
+    <div class="lab-info">${esc(a.caveat||'Évaluation indicative sur images échantillonnées.')}</div>`;
+  $('labPromptWrap').classList.toggle('hidden',!a.grokCorrectionPrompt);
+  $('labPrompt').textContent=a.grokCorrectionPrompt||'';
+}
+async function labApi(payload){return call('/api/nyra-lab',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})}
+$('labAnalyze').onclick=async()=>{
+  if(labWorking)return;
+  const file=$('labVideo').files?.[0];
+  if(!file){labStatus('Sélectionne une vidéo avant de lancer Nyra Lab.');return}
+  labWorking=true;$('labAnalyze').disabled=true;
+  try{
+    const sample=await labCaptureFrames(file);
+    labStatus('Nyra examine les images clés et les résultats du compte…');
+    const history=typeof brainVideoSnapshot==='function'?brainVideoSnapshot().slice(0,25):[];
+    const data=await labApi({action:'analyze',title:$('labTitle').value,caption:$('labCaption').value,transcript:$('labTranscript').value,...sample,history});
+    labReport(data.item);
+    labStatus('Analyse enregistrée. Tu peux lier ce test à une vidéo publiée.');
+    await loadLabHistory();
+  }catch(e){labStatus('Erreur : '+e.message)}
+  finally{labWorking=false;$('labAnalyze').disabled=false}
+};
+$('labCopyPrompt').onclick=async()=>{
+  const s=$('labPrompt').textContent;
+  if(!s)return;
+  try{await navigator.clipboard.writeText(s);labStatus('Prompt correctif copié.')}catch{labStatus('Copie indisponible : sélectionne le texte manuellement.')}
+};
+async function loadLabHistory(){
+  try{const data=await call('/api/nyra-lab');labRecords=data.history||[];renderLabHistory()}
+  catch(e){$('labHistory').textContent='Historique indisponible : '+e.message}
+}
+function renderLabHistory(){
+  $('labCount').textContent=labRecords.length+' test(s)';
+  const videos=latestTikTokVideos.slice().sort((a,b)=>(Number(b.create_time)||0)-(Number(a.create_time)||0));
+  if(!labRecords.length){$('labHistory').innerHTML='<p class="muted">Aucune analyse enregistrée. Teste une première vidéo ci-dessus.</p>';return}
+  $('labHistory').innerHTML=labRecords.map((r,i)=>{
+    const current=videos.find(v=>String(v.id)===String(r.videoId));
+    const result=r.lastResult;
+    const delta=result?.views&&analyticsState?.medianViews?Math.round((result.views/analyticsState.medianViews-1)*100):null;
+    return `<div class="lab-record" data-labidx="${i}">
+      <div class="lab-record-header"><b>${esc(r.title||'Sans titre')}</b><span class="badge">${Number(r.analysis?.score)||0}/100 · ${esc(String(r.createdAt||'').slice(0,10))}</span></div>
+      <div class="lab-info">${r.videoId?'Vidéo liée : '+esc(r.videoId):'Non publiée / non liée'} · ${esc(r.analysis?.verdict||'')}</div>
+      ${result?`<div class="lab-info">Dernière mesure : ▶ ${fmt(result.views)} · ♥ ${fmt(result.likes)} · 💬 ${fmt(result.comments)} · ↗ ${fmt(result.shares)} · engagement ${result.engagementRatePct??'—'} %${delta!==null?' · '+(delta>=0?'+':'')+delta+' % vs médiane du compte':''}<br>Mesuré le ${esc(result.at||'')} · ${r.snapshots?.length||0} point(s) de mesure</div>`:''}
+      <select class="lab-video-select" aria-label="Vidéo TikTok liée"><option value="">Choisir la vidéo publiée à associer</option>${videos.map(v=>`<option value="${esc(String(v.id))}" ${String(v.id)===String(r.videoId)?'selected':''}>${esc((v.title||v.video_description||'Sans titre').slice(0,65))} — ${fmt(v.view_count)} vues</option>`).join('')}</select>
+      <div class="lab-buttons"><button data-labaction="review">Voir le verdict</button><button data-labaction="link">Associer</button><button data-labaction="measure" ${!current?'disabled':''}>📊 Enregistrer les métriques</button></div>
+    </div>`;
+  }).join('');
+}
+$('labHistory').addEventListener('click',async event=>{
+  const btn=event.target.closest('button[data-labaction]');if(!btn)return;
+  const row=btn.closest('[data-labidx]');const r=labRecords[Number(row.dataset.labidx)];if(!r)return;
+  const action=btn.dataset.labaction;
+  if(action==='review'){labReport(r);$('labResult').scrollIntoView({behavior:'smooth',block:'center'});return}
+  const videoId=row.querySelector('select').value;
+  if(!videoId){labStatus('Choisis d’abord une vidéo TikTok.');return}
+  btn.disabled=true;
+  try{
+    if(action==='link'){await labApi({action:'link',id:r.id,videoId});labStatus('Analyse associée à la vidéo TikTok.')}
+    if(action==='measure'){
+      if(String(r.videoId)!==videoId)throw new Error('Associe d’abord le test à cette vidéo.');
+      const v=latestTikTokVideos.find(x=>String(x.id)===videoId);
+      if(!v)throw new Error('Vidéo absente : actualise les données TikTok.');
+      await labApi({action:'measure',id:r.id,videoId,metrics:{views:v.view_count,likes:v.like_count,comments:v.comment_count,shares:v.share_count}});
+      labStatus('Instantané réel TikTok enregistré.');
+    }
+    await loadLabHistory();
+  }catch(e){labStatus('Erreur : '+e.message)}finally{btn.disabled=false}
+});
+$('labReload').onclick=async()=>{await loadLabHistory();labStatus('Historique actualisé.')};
+loadLabHistory();
+
 </script>
 </body>
 </html>
