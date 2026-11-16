@@ -281,7 +281,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
     <div class="logo">N</div>
     <div>
       <h1>Nyra Control Center</h1>
-      <div class="sub">TikTok creator cockpit · V4.3 · Production Studio</div>
+      <div class="sub">TikTok creator cockpit · V4.4 · Production Studio</div>
     </div>
   </div>
   <div class="actions">
@@ -383,7 +383,7 @@ footer{margin-top:26px;color:#777;font-size:.85rem}footer a{color:#d9b9ff}
       <div>
         <h2>🧠 Nyra Brain</h2>
         <div class="brain-live"><span class="brain-dot"></span><span>Persona créative active</span></div>
-        <p class="muted">Nyra croise son identité, ses performances, le Radar et — si activé — le web actuel pour décider quoi explorer.</p>
+        <p class="muted">Nyra croise son identité, les données des 50 dernières vidéos disponibles, sa mémoire, le Radar et — si activé — le web actuel.</p>
       </div>
       <label class="web-toggle">
         <input id="brainWeb" type="checkbox" checked>
@@ -1401,6 +1401,7 @@ if(localStorage.getItem("nyra_last_publish_id")){
 }
 
 let latestTikTokVideos=[];
+let tikTokVideosRetrievedAt=null;
 
 function videoLabel(v){
   const title=(v.title||v.video_description||"Sans titre").trim();
@@ -1450,6 +1451,7 @@ async function syncCreatorLoop(silent=false){
     try{
       const vv=await call("/api/videos");
       latestTikTokVideos=vv.videos||[];
+      tikTokVideosRetrievedAt=new Date().toISOString();
     }catch(e){
       if(!silent)alert("Impossible de charger les vidéos TikTok : "+e.message);
       return;
@@ -1702,19 +1704,59 @@ function restoreBrainChat(){
     mem.forEach(m=>addBrainMessage(m.role,m.content,false));
   }
 }
+// V4.4 : transmettre au Brain les donnees REELLES des videos deja chargees.
+function brainVideoSnapshot(){
+  const numberOrNull=value=>{
+    if(value===null || value===undefined || value==="")return null;
+    const n=Number(value);
+    return Number.isFinite(n) && n>=0 ? n : null;
+  };
+  return latestTikTokVideos
+    .slice()
+    .sort((a,b)=>(Number(b.create_time)||0)-(Number(a.create_time)||0))
+    .slice(0,50)
+    .map(v=>{
+      const views=numberOrNull(v.view_count);
+      const likes=numberOrNull(v.like_count);
+      const comments=numberOrNull(v.comment_count);
+      const shares=numberOrNull(v.share_count);
+      const created=numberOrNull(v.create_time);
+      return {
+        id:String(v.id||""),
+        publishedAt:created ? new Date(created*1000).toISOString() : null,
+        title:String(v.title||v.video_description||"Sans titre").slice(0,120),
+        theme:classifyTheme(v),
+        durationSeconds:numberOrNull(v.duration),
+        views,likes,comments,shares,
+        engagementRatePct:views>0 && likes!==null && comments!==null && shares!==null
+          ? Math.round((likes+comments+shares)/views*10000)/100 : null,
+        url:v.share_url||null
+      };
+    });
+}
 function brainContext(){
   const themes=(analyticsState?.themes||[]).map(t=>({
     name:t.name,count:t.count,reach:Math.round(t.avgR),affinity:Math.round(t.avgA),
-    score:Math.round(t.avgC),avgViews:Math.round(t.avgViews),reliable:t.count>=3
+    score:Math.round(t.avgC),avgViews:Math.round(t.avgV),reliable:t.count>=3
   }));
   const reliable=(analyticsState?.reliableThemes||[]).map(t=>t.name);
+  const recentVideos=brainVideoSnapshot();
   return {
     account:{
       bestHour:analyticsState?.bestHour ?? null,
       bestDuration:analyticsState?.bestDuration ?? null,
       bestReachTheme:analyticsState?.bestReachTheme ?? null,
       bestAffinityTheme:analyticsState?.bestAffinityTheme ?? null,
-      themes,reliableThemes:reliable
+      themes,reliableThemes:reliable,
+      recentVideos,
+      videoMetricsInfo:{
+        source:"TikTok Display API - video.list, videos chargees par le Control Center",
+        sampleSize:recentVideos.length,
+        latestRetrievedAt:tikTokVideosRetrievedAt,
+        scope:"50 dernieres videos recuperees au maximum; pas necessairement tout le compte",
+        unavailable:["retention","watch_time","audience_demographics","follower_gain_by_video"],
+        warning:"Ne pas inventer les indicateurs absents. Un resultat a une date de collecte n'est pas une courbe historique."
+      }
     },
     creativeState:serverMemoryCache?.creativeState || loadBrainState(),
     recentConversation:loadBrainMemory().slice(-10),
@@ -1911,6 +1953,7 @@ async function load(){
     const vv=await call("/api/videos");
     const list=vv.videos||[];
     latestTikTokVideos=list;
+    tikTokVideosRetrievedAt=new Date().toISOString();
     analyze(list);
     renderJournal(serverMemoryCache||{});
 
